@@ -25,10 +25,19 @@
     <div id="touch-overlay" class="absolute inset-0 z-[1100]"></div>
 
     {# Score Overlay #}
-    <div class="absolute top-8 left-0 right-0 flex justify-center pointer-events-none z-[1200]">
+    <div class="absolute top-8 left-0 right-0 flex flex-col items-center gap-2 pointer-events-none z-[1200]">
         <div class="bg-black/80 px-6 py-2 rounded-full border border-accent/30 backdrop-blur-md">
             <span class="text-accent font-black text-2xl md:text-4xl tracking-tighter uppercase flicker">Digestion : <span id="current-score">0</span></span>
         </div>
+        <div class="bg-black/60 px-4 py-1 rounded-full border border-mauve-light/20 backdrop-blur-md">
+            <span class="text-mauve-light font-black text-[10px] md:text-xs tracking-[0.3em] uppercase">Pire déchéance : <span id="high-score">0</span></span>
+        </div>
+    </div>
+
+    {# Overlay de Pause #}
+    <div id="pause-screen" class="absolute inset-0 bg-black/90 flex flex-col items-center justify-center hidden z-[1250] pointer-events-none">
+        <h2 class="font-mystere text-6xl md:text-8xl text-accent uppercase italic tracking-widest flicker">PAUSE</h2>
+        <p class="text-mauve-light font-black uppercase text-xs tracking-[0.4em] mt-4">Digestion suspendue</p>
     </div>
 
     {# Écran Game Over #}
@@ -36,7 +45,8 @@
         <img src="/img/game-over.jpg" alt="GAME OVER" class="absolute inset-0 w-full h-full object-cover opacity-40">
         <div class="relative z-10 text-center max-w-lg w-full">
             <h2 class="font-mystere text-7xl md:text-9xl text-red-600 mb-8 shake uppercase italic tracking-tighter">SOCIOPATHÉ !</h2>
-            <p class="text-white text-2xl md:text-4xl mb-12 font-black uppercase tracking-[0.5em]">DÉCHÉANCE : <span id="final-score" class="text-accent">0</span></p>
+            <p class="text-white text-2xl md:text-4xl mb-2 font-black uppercase tracking-[0.5em]">DÉCHÉANCE : <span id="final-score" class="text-accent">0</span></p>
+            <p id="record-msg" class="text-mauve-light text-sm md:text-lg mb-8 font-black uppercase tracking-[0.3em] flicker">&nbsp;</p>
             <div class="flex flex-col gap-6">
                 <button id="restart-btn" class="w-full bg-accent text-primary py-6 rounded-full font-mystere text-4xl tracking-widest hover:scale-105 transition-all shadow-[0_0_50px_rgba(57,255,20,0.6)] uppercase">RENAÎTRE</button>
                 <button id="exit-btn" class="w-full bg-mauve-dark text-white py-5 rounded-full font-black uppercase tracking-widest hover:bg-white hover:text-black transition-all">QUITTER L'ABÎME</button>
@@ -49,8 +59,11 @@
     const canvas = document.getElementById('snake-game');
     const ctx = canvas.getContext('2d');
     const scoreElement = document.getElementById('current-score');
+    const highScoreElement = document.getElementById('high-score');
     const finalScoreElement = document.getElementById('final-score');
+    const recordMsgElement = document.getElementById('record-msg');
     const gameOverScreen = document.getElementById('game-over');
+    const pauseScreen = document.getElementById('pause-screen');
     const container = document.getElementById('game-container');
     const portal = document.getElementById('game-portal');
     const touchOverlay = document.getElementById('touch-overlay');
@@ -58,12 +71,65 @@
     const restartBtn = document.getElementById('restart-btn');
     const exitBtn = document.getElementById('exit-btn');
 
+    const INITIAL_SPEED = 150;
+    const HS_KEY = 'snakeImmondeHighScore';
+
     let gridSize, tileCountX, tileCountY;
-    let score = 0, snake = [], dx = 0, dy = 0, food = {}, slimes = [];
-    let gameSpeed = 150, gameLoop, isRunning = false;
+    let score = 0, snake = [], dx = 0, dy = 0, food = {}, slimes = [], bonus = null, particles = [];
+    let gameSpeed = INITIAL_SPEED, gameLoop, isRunning = false, isPaused = false;
+    let dirQueue = [];              // file de directions : évite le demi-tour mortel
+    let bonusTimer = 0;            // décompte de vie du bonus doré
+    let highScore = parseInt(localStorage.getItem(HS_KEY) || '0', 10);
+
+    highScoreElement.innerText = highScore;
 
     const snakeHeadImg = new Image();
     snakeHeadImg.src = '/img/snake.jpg';
+
+    // --- AUDIO IMMONDE (généré, sans fichier) ---
+    let audioCtx = null;
+    function initAudio() {
+        if (!audioCtx) {
+            try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {}
+        }
+    }
+    function playSound(type) {
+        if (!audioCtx) return;
+        const t = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        if (type === 'eat') {                 // gloup digestif
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(180, t);
+            osc.frequency.exponentialRampToValueAtTime(60, t + 0.18);
+            gain.gain.setValueAtTime(0.25, t);
+            gain.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
+            osc.start(t); osc.stop(t + 0.18);
+        } else if (type === 'bonus') {        // récompense crasseuse
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(440, t);
+            osc.frequency.exponentialRampToValueAtTime(880, t + 0.15);
+            gain.gain.setValueAtTime(0.2, t);
+            gain.gain.exponentialRampToValueAtTime(0.001, t + 0.2);
+            osc.start(t); osc.stop(t + 0.2);
+        } else if (type === 'malus') {        // pet sonore
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(90, t);
+            osc.frequency.linearRampToValueAtTime(45, t + 0.3);
+            gain.gain.setValueAtTime(0.3, t);
+            gain.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+            osc.start(t); osc.stop(t + 0.3);
+        } else if (type === 'death') {        // déchéance
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(300, t);
+            osc.frequency.exponentialRampToValueAtTime(40, t + 0.7);
+            gain.gain.setValueAtTime(0.35, t);
+            gain.gain.exponentialRampToValueAtTime(0.001, t + 0.7);
+            osc.start(t); osc.stop(t + 0.7);
+        }
+    }
+    function vibrate(ms) { if (navigator.vibrate) navigator.vibrate(ms); }
 
     function resizeCanvas() {
         canvas.width = window.innerWidth;
@@ -76,6 +142,8 @@
     }
 
     function requestStart() {
+        initAudio();
+        if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
         if (container.requestFullscreen) {
             container.requestFullscreen().then(() => {
                 setTimeout(() => {
@@ -104,18 +172,47 @@
     function initGame() {
         resizeCanvas();
         dx = 0; dy = -1;
+        dirQueue = [];
         score = 0;
+        gameSpeed = INITIAL_SPEED;
+        isPaused = false;
+        pauseScreen.classList.add('hidden');
         scoreElement.innerText = score;
+        highScoreElement.innerText = highScore;
         snake = [
             {x: Math.floor(tileCountX/2), y: Math.floor(tileCountY/2)},
             {x: Math.floor(tileCountX/2), y: Math.floor(tileCountY/2) + 1},
             {x: Math.floor(tileCountX/2), y: Math.floor(tileCountY/2) + 2}
         ];
         slimes = [];
+        bonus = null;
+        bonusTimer = 0;
+        particles = [];
         spawnFood();
         for(let i=0; i<3; i++) spawnSlime();
         if(gameLoop) clearInterval(gameLoop);
         gameLoop = setInterval(draw, gameSpeed);
+    }
+
+    function randomCell() {
+        return {
+            x: Math.floor(Math.random() * (tileCountX - 2)) + 1,
+            y: Math.floor(Math.random() * (tileCountY - 2)) + 1
+        };
+    }
+    function cellOccupied(c) {
+        return snake.some(s => s.x === c.x && s.y === c.y) ||
+               slimes.some(s => s.x === c.x && s.y === c.y) ||
+               (food.x === c.x && food.y === c.y) ||
+               (bonus && bonus.x === c.x && bonus.y === c.y);
+    }
+
+    // Fromage doré rare : apparaît parfois, disparaît avec le temps, vaut gros
+    function spawnBonus() {
+        let c, tries = 0;
+        do { c = randomCell(); tries++; } while (cellOccupied(c) && tries < 50);
+        bonus = c;
+        bonusTimer = 50; // ~ nombre de frames avant disparition
     }
 
     function spawnFood() {
@@ -144,6 +241,16 @@
     let touchStartX = 0, touchStartY = 0;
     let swipeThreshold = 30; 
 
+    // Empile une direction dans la file en interdisant le demi-tour
+    // par rapport à la DERNIÈRE direction enregistrée (corrige le bug du
+    // double-changement entre deux frames qui tuait injustement).
+    function queueDirection(ndx, ndy) {
+        const last = dirQueue.length ? dirQueue[dirQueue.length - 1] : { dx, dy };
+        if (ndx === -last.dx && ndy === -last.dy) return; // demi-tour interdit
+        if (ndx === last.dx && ndy === last.dy) return;   // doublon inutile
+        if (dirQueue.length < 3) dirQueue.push({ dx: ndx, dy: ndy });
+    }
+
     function handleSwipe(currentX, currentY) {
         if (!isRunning) return;
         const dx_swipe = currentX - touchStartX;
@@ -151,11 +258,9 @@
 
         if (Math.abs(dx_swipe) > swipeThreshold || Math.abs(dy_swipe) > swipeThreshold) {
             if (Math.abs(dx_swipe) > Math.abs(dy_swipe)) {
-                if (dx_swipe > 0 && dx !== -1) { dx = 1; dy = 0; }
-                else if (dx_swipe < 0 && dx !== 1) { dx = -1; dy = 0; }
+                queueDirection(dx_swipe > 0 ? 1 : -1, 0);
             } else {
-                if (dy_swipe > 0 && dy !== -1) { dx = 0; dy = 1; }
-                else if (dy_swipe < 0 && dy !== 1) { dx = 0; dy = -1; }
+                queueDirection(0, dy_swipe > 0 ? 1 : -1);
             }
             touchStartX = currentX;
             touchStartY = currentY;
@@ -163,6 +268,7 @@
     }
 
     touchOverlay.addEventListener('touchstart', (e) => {
+        if (isPaused) { togglePause(); e.preventDefault(); return; } // tap pour reprendre
         touchStartX = e.touches[0].clientX;
         touchStartY = e.touches[0].clientY;
         e.preventDefault();
@@ -189,8 +295,27 @@
 
     touchOverlay.addEventListener('mouseup', () => isMouseDown = false);
 
+    function spawnParticles(px, py, color, count) {
+        for (let i = 0; i < count; i++) {
+            const ang = Math.random() * Math.PI * 2;
+            const spd = Math.random() * 4 + 1;
+            particles.push({
+                x: px, y: py,
+                vx: Math.cos(ang) * spd, vy: Math.sin(ang) * spd,
+                life: 1, color
+            });
+        }
+    }
+
     function draw() {
-        if (!isRunning) return;
+        if (!isRunning || isPaused) return;
+
+        // Consomme une direction de la file (une seule par frame → anti demi-tour)
+        if (dirQueue.length) {
+            const nd = dirQueue.shift();
+            if (!(nd.dx === -dx && nd.dy === -dy)) { dx = nd.dx; dy = nd.dy; }
+        }
+
         const head = {x: snake[0].x + dx, y: snake[0].y + dy};
 
         if (head.x < 0 || head.x >= tileCountX || head.y < 0 || head.y >= tileCountY ||
@@ -200,18 +325,53 @@
         }
 
         snake.unshift(head);
+
+        // Bonus doré rare : disparaît tout seul après un temps
+        if (bonus) {
+            bonusTimer--;
+            if (bonusTimer <= 0) bonus = null;
+        }
+
+        let ate = false;
         if (head.x === food.x && head.y === food.y) {
+            ate = true;
             score += 10;
-            scoreElement.innerText = score;
+            playSound('eat'); vibrate(20);
+            spawnParticles(head.x * gridSize + gridSize/2, head.y * gridSize + gridSize/2, '255,221,0', 8);
             spawnFood();
             if (score % 40 === 0) spawnSlime();
+            // ~1 chance sur 6 de faire apparaître le fromage doré
+            if (!bonus && Math.random() < 0.17) spawnBonus();
             if (gameSpeed > 60) {
                 clearInterval(gameLoop);
                 gameSpeed -= 4;
                 gameLoop = setInterval(draw, gameSpeed);
             }
+        } else if (bonus && head.x === bonus.x && head.y === bonus.y) {
+            ate = true; // le bonus fait grossir d'une case
+            score += 50;
+            playSound('bonus'); vibrate([30, 20, 30]);
+            spawnParticles(head.x * gridSize + gridSize/2, head.y * gridSize + gridSize/2, '255,215,0', 24);
+            bonus = null;
+        }
+
+        if (ate) {
+            scoreElement.innerText = score;
+            if (score > highScore) {
+                highScore = score;
+                highScoreElement.innerText = highScore;
+            }
         } else {
             snake.pop();
+        }
+
+        // MALUS « indigestion » : parfois, une bouchée ralentit franchement
+        // le serpent (plus pénible à jouer) — uniquement si on avait accéléré.
+        if (ate && Math.random() < 0.12 && gameSpeed < INITIAL_SPEED) {
+            clearInterval(gameLoop);
+            gameSpeed += 12; // ralentit = plus pénible
+            playSound('malus'); vibrate(60);
+            gameLoop = setInterval(draw, gameSpeed);
         }
 
         ctx.fillStyle = '#050505';
@@ -235,6 +395,27 @@
         ctx.font = `${gridSize}px serif`;
         ctx.fillText('🧀', food.x * gridSize, food.y * gridSize + gridSize * 0.85);
 
+        // Bonus doré (clignote quand il va disparaître)
+        if (bonus && (bonusTimer > 12 || Math.floor(bonusTimer / 2) % 2 === 0)) {
+            ctx.save();
+            ctx.shadowBlur = 25; ctx.shadowColor = '#ffd700';
+            ctx.font = `${gridSize * 1.1}px serif`;
+            ctx.fillText('🌟', bonus.x * gridSize - gridSize * 0.05, bonus.y * gridSize + gridSize * 0.9);
+            ctx.restore();
+        }
+
+        // Particules (effets de bouchée / mort)
+        ctx.shadowBlur = 0;
+        for (let i = particles.length - 1; i >= 0; i--) {
+            const p = particles[i];
+            p.x += p.vx; p.y += p.vy; p.vy += 0.15; p.life -= 0.04;
+            if (p.life <= 0) { particles.splice(i, 1); continue; }
+            ctx.fillStyle = `rgba(${p.color}, ${p.life})`;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, gridSize * 0.18 * p.life + 1, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
         // Snake
         snake.forEach((segment, index) => {
             if (index === 0) {
@@ -256,23 +437,48 @@
     function gameOver() {
         isRunning = false;
         clearInterval(gameLoop);
+        playSound('death'); vibrate([80, 40, 120]);
+
+        const isNewRecord = score > 0 && score >= highScore;
+        if (score > highScore) {
+            highScore = score;
+            localStorage.setItem(HS_KEY, String(highScore));
+            highScoreElement.innerText = highScore;
+        }
+
         finalScoreElement.innerText = score;
+        recordMsgElement.innerText = scoreMessage(score, isNewRecord);
         gameOverScreen.classList.remove('hidden');
+    }
+
+    function scoreMessage(s, isNewRecord) {
+        if (isNewRecord && s > 0) return '🏆 Nouveau sommet de déchéance !';
+        if (s === 0) return 'Même pas une bouchée. Pitoyable.';
+        if (s < 50) return 'Estomac fragile.';
+        if (s < 150) return 'Digestion correcte, mais immonde.';
+        if (s < 300) return 'Gloutonnerie inquiétante.';
+        return 'Sociopathe gastrique confirmé.';
     }
 
     function resetGame() {
         gameOverScreen.classList.add('hidden');
-        gameSpeed = 150;
-        initGame();
+        initGame();              // initGame réinitialise déjà la vitesse
         isRunning = true;
     }
+
+    // Pause automatique si l'onglet/la fenêtre perd le focus
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden && isRunning && !isPaused) togglePause();
+    });
 
     function exitGame() {
         if (document.exitFullscreen && document.fullscreenElement) document.exitFullscreen();
         gameOverScreen.classList.add('hidden');
+        pauseScreen.classList.add('hidden');
         container.classList.add('hidden');
         portal.classList.remove('hidden');
         isRunning = false;
+        isPaused = false;
         clearInterval(gameLoop);
     }
 
@@ -283,12 +489,19 @@
     document.addEventListener('keydown', (e) => {
         if (!isRunning) return;
         switch(e.key) {
-            case 'ArrowUp': if(dy !== 1) { dx = 0; dy = -1; } break;
-            case 'ArrowDown': if(dy !== -1) { dx = 0; dy = 1; } break;
-            case 'ArrowLeft': if(dx !== 1) { dx = -1; dy = 0; } break;
-            case 'ArrowRight': if(dx !== -1) { dx = 1; dy = 0; } break;
+            case 'ArrowUp': case 'z': case 'w': queueDirection(0, -1); break;
+            case 'ArrowDown': case 's': queueDirection(0, 1); break;
+            case 'ArrowLeft': case 'q': case 'a': queueDirection(-1, 0); break;
+            case 'ArrowRight': case 'd': queueDirection(1, 0); break;
+            case ' ': case 'p': e.preventDefault(); togglePause(); break;
         }
     });
+
+    function togglePause() {
+        if (!isRunning) return;
+        isPaused = !isPaused;
+        pauseScreen.classList.toggle('hidden', !isPaused);
+    }
 
     window.addEventListener('resize', resizeCanvas);
 </script>

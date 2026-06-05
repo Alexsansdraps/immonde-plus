@@ -48,6 +48,9 @@
         <div class="bg-black/60 px-6 py-2 rounded-full border border-accent/30 backdrop-blur-md">
             <span class="text-accent font-black text-xl md:text-3xl tracking-tighter uppercase">SCORE : <span id="cheese-count">0</span></span>
         </div>
+        <div class="bg-black/60 px-6 py-2 rounded-full border border-mauve-light/20 backdrop-blur-md">
+            <span class="text-mauve-light font-black text-xl md:text-3xl tracking-tighter uppercase">RECORD : <span id="best-count">0</span></span>
+        </div>
         <div class="bg-black/60 px-6 py-2 rounded-full border border-red-500/30 backdrop-blur-md">
             <span class="text-red-500 font-black text-xl md:text-3xl tracking-tighter uppercase">DÉTRAQUE : <span id="life-count">3</span></span>
         </div>
@@ -56,7 +59,8 @@
     {# Game Over #}
     <div id="game-over" class="absolute inset-0 bg-black/95 flex flex-col items-center justify-center hidden z-[1300] p-8 text-center">
         <h2 class="font-mystere text-7xl md:text-9xl text-red-600 mb-8 shake uppercase italic">INCARCÉRÉ !</h2>
-        <p class="text-white text-2xl md:text-4xl mb-12 font-black uppercase">SCORE FINAL : <span id="final-score" class="text-accent">0</span></p>
+        <p class="text-white text-2xl md:text-4xl mb-2 font-black uppercase">SCORE FINAL : <span id="final-score" class="text-accent">0</span></p>
+    <p id="record-msg" class="text-mauve-light text-sm md:text-lg mb-12 font-black uppercase tracking-[0.3em] flicker">&nbsp;</p>
         <div class="flex flex-col gap-6 w-full max-w-sm">
             <button id="restart-btn" class="bg-accent text-primary py-6 rounded-full font-mystere text-4xl uppercase shadow-[0_0_50px_rgba(57,255,20,0.6)]">RÉCIDIVER</button>
             <button id="exit-btn" class="bg-mauve-dark text-white py-4 rounded-full font-black uppercase">QUITTER L'ÉGOÛT</button>
@@ -71,8 +75,16 @@
     const portal = document.getElementById('game-portal');
     const gameOverScreen = document.getElementById('game-over');
     const cheeseCountEl = document.getElementById('cheese-count');
+    const bestCountEl = document.getElementById('best-count');
     const lifeCountEl = document.getElementById('life-count');
     const finalScoreEl = document.getElementById('final-score');
+    const recordMsgEl = document.getElementById('record-msg');
+
+    const fx = window.ImmondeFX;
+    function refreshRecord() {
+        const best = fx && fx.getHighScore('mickaelWorld');
+        bestCountEl.innerText = (best === null || best === undefined) ? 0 : best;
+    }
     const launchBtn = document.getElementById('launch-button');
     const jumpZone = document.getElementById('jump-zone');
     const shootBtn = document.getElementById('shoot-btn');
@@ -103,10 +115,17 @@
     }
 
     function requestStart() {
+        if (fx) fx.unlock();
         if (container.requestFullscreen) {
             container.requestFullscreen().then(() => setTimeout(startGame, 200)).catch(startGame);
         } else startGame();
     }
+
+    // Si on quitte le plein écran (Échap) en pleine partie, on sort proprement
+    // au lieu de laisser le jeu tourner caché.
+    document.addEventListener('fullscreenchange', () => {
+        if (!document.fullscreenElement && isRunning) exitGame();
+    });
 
     function startGame() {
         resize();
@@ -130,6 +149,7 @@
         // Sol de départ
         platforms.push({ x: 0, y: groundY, w: 2000, h: 100, type: 'ground' });
         lastPlatformX = 2000;
+        refreshRecord();
         updateUI();
     }
 
@@ -160,6 +180,8 @@
     function updateUI() {
         cheeseCountEl.innerText = score;
         lifeCountEl.innerText = lives;
+        const best = fx && fx.getHighScore('mickaelWorld');
+        if (best !== null && best !== undefined && score > best) bestCountEl.innerText = score;
     }
 
     function update() {
@@ -175,12 +197,14 @@
             player.vy = JUMP_FORCE;
             player.grounded = false;
             coyoteTime = 0;
+            if (fx) { fx.play('pop'); fx.vibrate(10); }
         }
         input.jump = false;
 
         if (input.shoot && Date.now() - input.lastShoot > 400) {
             player.cheeses.push({ x: player.x + player.w, y: player.y + player.h/2, vx: currentSpeed + 12, vy: -2 });
             input.lastShoot = Date.now();
+            if (fx) fx.play('shoot');
         }
         input.shoot = false;
 
@@ -205,7 +229,7 @@
             if (!e.alive) return;
             e.x += e.vx;
             if (Math.abs((player.x + player.w/2) - (e.x + e.w/2)) < 40 && Math.abs((player.y + player.h/2) - (e.y + e.h/2)) < 40) { takeDamage(); e.alive = false; }
-            player.cheeses.forEach(c => { if (Math.abs(c.x - e.x) < 45 && Math.abs(c.y - e.y) < 45) { e.alive = false; score += 10; updateUI(); } });
+            player.cheeses.forEach(c => { if (Math.abs(c.x - e.x) < 45 && Math.abs(c.y - e.y) < 45) { e.alive = false; score += 10; updateUI(); if (fx) fx.play('hit'); } });
         });
 
         if (Math.random() < 0.02 + (currentSpeed / 700)) {
@@ -227,6 +251,7 @@
 
     function takeDamage() {
         lives--; updateUI();
+        if (fx) { fx.play('malus'); fx.vibrate([60, 30, 60]); }
         if (lives <= 0) gameOver();
         canvas.style.filter = 'invert(1)';
         setTimeout(() => canvas.style.filter = '', 100);
@@ -275,8 +300,18 @@
         ctx.restore();
     }
 
-    function gameOver() { isRunning = false; cancelAnimationFrame(gameLoop); finalScoreEl.innerText = score; gameOverScreen.classList.remove('hidden'); }
-    function resetGame() { gameOverScreen.classList.add('hidden'); initLevel(); isRunning = true; gameLoop = requestAnimationFrame(update); }
+    function gameOver() {
+        isRunning = false; cancelAnimationFrame(gameLoop);
+        if (fx) fx.play('death');
+        const isRecord = fx && fx.setHighScore('mickaelWorld', score, 'max');
+        refreshRecord();
+        finalScoreEl.innerText = score;
+        recordMsgEl.innerText = isRecord && score > 0
+            ? '🏆 Nouvelle évasion record !'
+            : (score === 0 ? 'Capturé sans gloire.' : 'Mickaël retournera dans l\'ombre…');
+        gameOverScreen.classList.remove('hidden');
+    }
+    function resetGame() { gameOverScreen.classList.add('hidden'); initLevel(); refreshRecord(); isRunning = true; gameLoop = requestAnimationFrame(update); }
     function exitGame() { if (document.exitFullscreen && document.fullscreenElement) document.exitFullscreen(); isRunning = false; cancelAnimationFrame(gameLoop); container.classList.add('hidden'); portal.classList.remove('hidden'); gameOverScreen.classList.add('hidden'); }
 
     // Event Listeners Propres
