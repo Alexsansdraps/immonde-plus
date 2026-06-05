@@ -1,0 +1,66 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Contact & Dénonciations - Imm🧅nde Plus{% endblock %}
+
+{% block body %}
+<div class="max-w-3xl mx-auto py-12">
+    <div class="bg-primary/40 backdrop-blur-xl p-10 md:p-16 rounded-[3rem] border border-white/10 shadow-[0_0_100px_rgba(0,0,0,0.5)] relative overflow-hidden">
+        {# Decorative scanning line #}
+        <div class="absolute top-0 left-0 w-full h-1 bg-accent/20 animate-scan-slow opacity-50"></div>
+        
+        <header class="text-center mb-16 relative">
+            <div class="inline-block px-4 py-1.5 bg-accent/10 border border-accent/20 rounded-full text-accent font-black uppercase tracking-[0.3em] text-[9px] mb-6">
+                CANAL DE SÉCURITÉ ENCRYPTÉ
+            </div>
+            <h1 class="font-mystere text-5xl md:text-6xl text-accent mb-6 italic tracking-widest uppercase drop-shadow-[0_0_15px_rgba(57,255,20,0.4)]">Transmission</h1>
+            <p class="text-mauve-light text-sm font-black uppercase tracking-[0.2em] opacity-60">Utilisez ce formulaire pour nous transmettre vos dossiers confidentiels.</p>
+        </header>
+
+        {% for message in app.flashes('success') %}
+            <div class="bg-accent/10 border border-accent/30 text-accent p-6 mb-12 font-black text-xs uppercase tracking-widest rounded-2xl animate-bounce text-center">
+                ✓ Message transmis avec succès. Le centre va analyser vos données.
+            </div>
+        {% endfor %}
+
+        {{ form_start(contactForm, {'attr': {'class': 'space-y-10'}}) }}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+                <div class="space-y-4">
+                    {{ form_label(contactForm.name, null, {'label_attr': {'class': 'block text-[9px] font-black uppercase tracking-[0.3em] text-accent/70'}}) }}
+                    {{ form_widget(contactForm.name, {'attr': {'class': 'w-full bg-white/5 border border-white/10 focus:border-accent focus:bg-accent/5 rounded-2xl px-6 py-4 transition-all text-white placeholder:text-white/20 font-bold'}}) }}
+                    {{ form_errors(contactForm.name) }}
+                </div>
+                <div class="space-y-4">
+                    {{ form_label(contactForm.email, null, {'label_attr': {'class': 'block text-[9px] font-black uppercase tracking-[0.3em] text-accent/70'}}) }}
+                    {{ form_widget(contactForm.email, {'attr': {'class': 'w-full bg-white/5 border border-white/10 focus:border-accent focus:bg-accent/5 rounded-2xl px-6 py-4 transition-all text-white placeholder:text-white/20 font-bold'}}) }}
+                    {{ form_errors(contactForm.email) }}
+                </div>
+            </div>
+            
+            <div class="space-y-4">
+                {{ form_label(contactForm.subject, null, {'label_attr': {'class': 'block text-[9px] font-black uppercase tracking-[0.3em] text-accent/70'}}) }}
+                {{ form_widget(contactForm.subject, {'attr': {'class': 'w-full bg-white/5 border border-white/10 focus:border-accent focus:bg-accent/5 rounded-2xl px-6 py-4 transition-all text-white font-bold'}}) }}
+                {{ form_errors(contactForm.subject) }}
+            </div>
+
+            <div class="space-y-4">
+                {{ form_label(contactForm.message, null, {'label_attr': {'class': 'block text-[9px] font-black uppercase tracking-[0.3em] text-accent/70'}}) }}
+                {{ form_widget(contactForm.message, {'attr': {'class': 'w-full bg-white/5 border border-white/10 focus:border-accent focus:bg-accent/5 rounded-[2.5rem] px-8 py-6 transition-all text-white font-bold min-h-[200px]'}}) }}
+                {{ form_errors(contactForm.message) }}
+            </div>
+
+            <div class="pt-8 text-center">
+                <button type="submit" class="group relative px-20 py-6 bg-accent text-primary rounded-full font-black uppercase text-xs tracking-[0.3em] overflow-hidden transition-all hover:scale-105 hover:shadow-[0_0_50px_rgba(57,255,20,0.5)]">
+                    <span class="relative z-10">Lancer la Transmission</span>
+                    <div class="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+                </button>
+            </div>
+        {{ form_end(contactForm) }}
+
+        <div class="mt-16 text-center">
+            <a href="{{ path('blog_index') }}" class="inline-flex items-center gap-2 text-mauve-light/40 font-black uppercase text-[9px] tracking-[0.4em] hover:text-accent transition-all">
+                <span class="text-lg">←</span> Retour à la base de données
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

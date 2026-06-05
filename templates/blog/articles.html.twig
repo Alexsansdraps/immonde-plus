@@ -1,0 +1,132 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Les Articles - Imm🧅nde Plus | Dossiers Classés{% endblock %}
+
+{% block body %}
+    <div class="border-b-2 border-accent pb-8 mb-12">
+        <h1 class="font-mystere text-5xl tracking-widest text-accent italic uppercase">Les Articles Classés</h1>
+        <p class="text-mauve-light mt-2 font-bold uppercase text-[10px] tracking-[0.3em]">Accès direct à la base de données Imm🧅nde Plus.</p>
+    </div>
+
+    <div class="mb-20 text-center relative group">
+        <div class="absolute -inset-2 bg-accent/5 blur-xl rounded-full opacity-0 group-focus-within:opacity-100 transition-opacity"></div>
+        <div class="relative">
+            <input type="text" id="article-search" name="q" value="{{ searchTerm }}" placeholder="SCANNER LA BASE DE DONNÉES..." 
+                class="w-full max-w-2xl bg-white/5 border-2 border-white/10 focus:border-accent focus:bg-accent/5 focus:ring-4 focus:ring-accent/10 rounded-full px-10 py-6 text-white font-black placeholder:text-white/20 transition-all text-xl text-center uppercase tracking-widest shadow-2xl">
+            <div class="absolute right-12 top-1/2 -translate-y-1/2 text-accent/30 animate-pulse hidden md:block">
+                <span class="text-[10px] font-black tracking-tighter">V1.0-INVESTIGATION</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="articles-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 transition-opacity duration-300">
+        {% for article in articles %}
+            <article class="group relative flex flex-col bg-white/5 backdrop-blur-md rounded-[2.5rem] border border-white/10 hover:border-accent/50 overflow-hidden transition-all duration-500 shadow-2xl hover:-translate-y-4">
+                {# Badge Catégorie #}
+                <div class="absolute top-6 left-6 z-30 bg-accent text-primary text-[9px] font-black px-4 py-1.5 rounded-full uppercase tracking-widest shadow-[0_0_15px_rgba(57,255,20,0.4)]">
+                    {{ article.category ? article.category.name : 'Classifié' }}
+                </div>
+
+                {# Image Container #}
+                <div class="aspect-video relative overflow-hidden">
+                    <a href="{{ path('blog_show', {slug: article.slug}) }}" class="block w-full h-full">
+                        {% if article.image %}
+                            <img src="{{ asset('uploads/articles/' ~ article.image) }}" alt="{{ article.title }}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
+                        {% else %}
+                            <div class="w-full h-full bg-mauve-dark/20 flex items-center justify-center text-6xl opacity-20 text-accent transition-opacity group-hover:opacity-40">🧅</div>
+                        {% endif %}
+                    </a>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-80 pointer-events-none"></div>
+                    
+                    {# Scanning Line Effect #}
+                    <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
+                        <div class="absolute top-0 left-0 w-full h-[2px] bg-accent/50 shadow-[0_0_15px_#39ff14] animate-scan"></div>
+                    </div>
+                </div>
+
+                {# Content #}
+                <div class="p-8 flex flex-col flex-1 relative">
+                    <div class="absolute top-0 right-8 -translate-y-1/2 w-12 h-12 bg-accent/10 rounded-full blur-xl group-hover:bg-accent/30 transition-colors"></div>
+                    
+                    <time class="text-[10px] font-bold text-mauve-light uppercase tracking-[0.2em] mb-4 opacity-60">
+                        DOSSIER DU {{ article.publishedAt|date('d/m/Y') }}
+                    </time>
+                    
+                    <h2 class="font-mystere text-3xl text-white mb-6 group-hover:text-accent transition-colors leading-tight italic uppercase tracking-tighter">
+                        <a href="{{ path('blog_show', {slug: article.slug}) }}">{{ article.title }}</a>
+                    </h2>
+
+                    <div class="text-gray-400 text-xs leading-loose font-medium mb-8 line-clamp-3 uppercase tracking-tighter opacity-80 group-hover:opacity-100 transition-opacity">
+                        {{ (article.summary ?: article.content)|striptags|replace({'&nbsp;': ' '})|raw|slice(0, 160) ~ '...' }}
+                    </div>
+
+                    <div class="mt-auto pt-6 border-t border-white/5 flex justify-between items-center">
+                        <a href="{{ path('blog_show', {slug: article.slug}) }}" class="inline-flex items-center gap-3 text-accent font-black uppercase text-[10px] tracking-widest group/link">
+                            <span class="group-hover/link:mr-2 transition-all">S'INFILTRER</span>
+                            <span class="text-lg translate-y-[1px]">→</span>
+                        </a>
+                        <span class="text-[8px] font-black text-white/20 tracking-widest uppercase">PAR {{ article.author.pseudo ?: article.author.email|split('@')[0]|capitalize }}</span>
+                    </div>
+                </div>
+            </article>
+        {% else %}
+            <div class="col-span-full text-center py-32 border-2 border-dashed border-white/5 rounded-[3rem]">
+                <p class="text-mauve-light font-black italic opacity-40 uppercase tracking-[0.4em]">Aucun dossier n'a été déclassifié.</p>
+            </div>
+        {% endfor %}
+    </div>
+
+    {# Pagination Manuelle #}
+    {% if totalPages is defined and totalPages > 1 %}
+        <div class="mt-32 flex justify-center items-center gap-10 relative z-50">
+            {% if currentPage > 1 %}
+                <a href="{{ path('blog_articles', {page: currentPage - 1}) }}" class="group relative px-10 py-4 bg-primary border border-accent/30 text-accent rounded-full font-black uppercase text-[10px] tracking-widest overflow-hidden transition-all hover:border-accent hover:shadow-[0_0_30px_rgba(57,255,20,0.4)]">
+                    <span class="relative z-10">Précédent</span>
+                    <div class="absolute inset-0 bg-accent translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+                </a>
+            {% endif %}
+            
+            <div class="flex flex-col items-center">
+                <span class="text-accent/50 font-black text-[10px] tracking-[0.4em] uppercase mb-1">Dossier</span>
+                <span class="text-white font-mystere text-4xl tracking-widest italic">{{ currentPage }} <span class="text-accent/30">/</span> {{ totalPages }}</span>
+            </div>
+
+            {% if currentPage < totalPages %}
+                <a href="{{ path('blog_articles', {page: currentPage + 1}) }}" class="group relative px-10 py-4 bg-accent text-primary rounded-full font-black uppercase text-[10px] tracking-widest overflow-hidden transition-all hover:shadow-[0_0_30px_rgba(57,255,20,0.6)] hover:scale-105">
+                    <span class="relative z-10">Suivant</span>
+                    <div class="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+                </a>
+            {% endif %}
+        </div>
+    {% endif %}
+
+    <script>
+        const searchInput = document.getElementById('article-search');
+        const grid = document.getElementById('articles-grid');
+        let searchTimeout;
+
+        searchInput.addEventListener('input', (e) => {
+            const query = e.target.value;
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                grid.style.opacity = '0.3';
+                const url = new URL(window.location.href);
+                if (query) {
+                    url.searchParams.set('q', query);
+                } else {
+                    url.searchParams.delete('q');
+                }
+                // Reset page to 1 when searching
+                url.searchParams.delete('page');
+                window.location.href = url.toString();
+            }, 600);
+        });
+
+        if (searchInput.value) {
+            searchInput.focus();
+            const val = searchInput.value;
+            searchInput.value = '';
+            searchInput.value = val;
+        }
+    </script>
+{% endblock %}

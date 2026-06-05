@@ -1,0 +1,167 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Accueil - Imm🧅nde Plus | Vérités sur Mickael Imm🧅nde (Emond Plus){% endblock %}
+
+{% block body %}
+    <div class="text-center mb-32 relative">
+        {# Hidden but indexable semantic text for SEO #}
+        <div class="sr-only">Bienvenue sur Emond Plus, le portail officiel de Mickael Emond alias Immonde Plus.</div>
+        
+        <div class="inline-block relative">
+            <h1 class="font-mystere text-6xl md:text-9xl font-black mb-6 tracking-widest text-accent uppercase drop-shadow-[0_0_30px_rgba(57,255,20,0.6)] animate-pulse relative z-10">
+                IMM<span class="inline-block animate-bounce -mx-1">🧅</span>NDE PLUS
+            </h1>
+            <div class="absolute -inset-4 bg-accent/5 blur-3xl rounded-full animate-pulse"></div>
+        </div>
+
+        <p class="text-sm md:text-lg font-bold tracking-[0.4em] uppercase text-mauve-light flicker mb-16 relative">
+            <span class="opacity-50">[</span> L'élite de l'investigation immonde <span class="opacity-50">]</span>
+        </p>
+        
+        <div class="flex flex-col md:flex-row justify-center gap-8 mt-12">
+            <a href="{{ path('blog_articles') }}" class="group relative px-12 py-5 bg-accent text-primary rounded-full font-black uppercase text-sm tracking-widest overflow-hidden transition-all hover:scale-105 hover:shadow-[0_0_40px_rgba(57,255,20,0.6)]">
+                <span class="relative z-10">Consulter les Dossiers</span>
+                <div class="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+            </a>
+            <a href="{{ path('blog_games') }}" class="group relative px-12 py-5 border-2 border-accent text-accent rounded-full font-black uppercase text-sm tracking-widest overflow-hidden transition-all hover:bg-accent hover:text-primary hover:shadow-[0_0_30px_rgba(57,255,20,0.3)]">
+                <span class="relative z-10">Tester les Expériences</span>
+                <div class="absolute inset-0 bg-accent -translate-x-full group-hover:translate-x-0 transition-transform duration-300"></div>
+            </a>
+        </div>
+    </div>
+
+    {# Section Dernières Révélations #}
+    <div class="mb-24">
+        <div class="flex items-center gap-6 mb-12 border-b-2 border-accent pb-6">
+            <h2 class="font-mystere text-4xl md:text-6xl text-accent uppercase italic tracking-tighter">Dernières Révélations</h2>
+            <div class="flex-1 h-[2px] bg-mauve-dark/30 hidden md:block"></div>
+            <a href="{{ path('blog_articles') }}" class="text-[10px] font-black uppercase text-mauve-light hover:text-accent transition-colors tracking-widest">Voir tout →</a>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+            {% for article in latestArticles %}
+                <article class="group relative flex flex-col bg-white/5 backdrop-blur-md rounded-[2.5rem] border border-white/10 hover:border-accent/50 overflow-hidden transition-all duration-500 shadow-2xl hover:-translate-y-4">
+                    {# Badge Catégorie #}
+                    <div class="absolute top-6 left-6 z-30 bg-accent text-primary text-[9px] font-black px-4 py-1.5 rounded-full uppercase tracking-widest shadow-[0_0_15px_rgba(57,255,20,0.4)]">
+                        {{ article.category ? article.category.name : 'Classifié' }}
+                    </div>
+
+                    {# Image Container #}
+                    <div class="aspect-video relative overflow-hidden">
+                        {% if article.image %}
+                            <img src="{{ asset('uploads/articles/' ~ article.image) }}" alt="{{ article.title }}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
+                        {% else %}
+                            <div class="w-full h-full bg-mauve-dark/20 flex items-center justify-center">
+                                <span class="text-6xl opacity-20">🧅</span>
+                            </div>
+                        {% endif %}
+                        <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-80"></div>
+                        
+                        {# Scanning Line Effect #}
+                        <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
+                            <div class="absolute top-0 left-0 w-full h-[2px] bg-accent/50 shadow-[0_0_15px_#39ff14] animate-scan"></div>
+                        </div>
+                    </div>
+
+                    {# Content #}
+                    <div class="p-8 flex flex-col flex-1 relative">
+                        <div class="absolute top-0 right-8 -translate-y-1/2 w-12 h-12 bg-accent/10 rounded-full blur-xl group-hover:bg-accent/30 transition-colors"></div>
+                        
+                        <time class="text-[10px] font-bold text-mauve-light uppercase tracking-[0.2em] mb-4">
+                            ID: {{ article.id }} // DOSSIER DU {{ article.publishedAt|date('d/m/Y') }}
+                        </time>
+                        
+                        <h3 class="font-mystere text-3xl text-white mb-6 group-hover:text-accent transition-colors leading-tight italic uppercase tracking-tighter">
+                            {{ article.title }}
+                        </h3>
+
+                        <div class="text-gray-400 text-xs leading-loose font-medium mb-8 line-clamp-3 uppercase tracking-tighter opacity-80 group-hover:opacity-100 transition-opacity">
+                            {{ article.summary|striptags|replace({'&nbsp;': ' '})|raw }}
+                        </div>
+
+                        <div class="mt-auto pt-6 border-t border-white/5 flex justify-between items-center">
+                            <a href="{{ path('blog_show', {slug: article.slug}) }}" class="inline-flex items-center gap-3 text-accent font-black uppercase text-[10px] tracking-widest group/link">
+                                <span class="group-hover/link:mr-2 transition-all">S'INFILTRER</span>
+                                <span class="text-lg translate-y-[1px]">→</span>
+                            </a>
+                            <span class="text-[8px] font-black text-white/20 tracking-widest uppercase">CLASSIFIÉ TOP SECRET</span>
+                        </div>
+                    </div>
+                </article>
+            {% endfor %}
+        </div>
+    </div>
+
+    {# Section Vidéos #}
+    <div class="mb-24">
+        <div class="flex items-center gap-6 mb-16 border-b-2 border-accent pb-6">
+            <h2 class="font-mystere text-4xl md:text-6xl text-accent uppercase italic tracking-tighter text-right w-full md:w-auto">Preuves Vidéo</h2>
+            <div class="flex-1 h-[2px] bg-accent/10 hidden md:block"></div>
+        </div>
+        
+        <div class="flex flex-col md:flex-row justify-center items-center gap-12">
+            {# Vidéo 1 #}
+            <div class="w-full max-w-[320px] group relative bg-black rounded-3xl overflow-hidden shadow-[0_0_60px_rgba(0,0,0,0.8)] border-2 border-white/5 hover:border-accent/50 transition-all duration-500">
+                <div class="relative aspect-[9/16]">
+                    <video controls preload="metadata" class="w-full h-full object-cover">
+                        <source src="{{ asset('videos/bandeannonce.mp4') }}" type="video/mp4">
+                    </video>
+                    
+                    {# Scanning Bar #}
+                    <div class="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                        <div class="absolute top-0 left-0 w-full h-[2px] bg-accent/50 shadow-[0_0_15px_#39ff14] animate-scan"></div>
+                    </div>
+
+                    {# Corner Details #}
+                    <div class="absolute bottom-4 left-4 text-[8px] font-black text-accent/50 tracking-widest uppercase bg-black/60 px-2 py-1 rounded">REC-001</div>
+                </div>
+                <div class="p-4 bg-primary/40 backdrop-blur-md border-t border-white/5">
+                    <span class="text-[9px] font-black text-mauve-light uppercase tracking-widest">Bande Annonce Officielle</span>
+                </div>
+            </div>
+
+            {# Vidéo 2 #}
+            <div class="w-full max-w-[320px] group relative bg-black rounded-3xl overflow-hidden shadow-[0_0_60px_rgba(0,0,0,0.8)] border-2 border-white/5 hover:border-accent/50 transition-all duration-500">
+                <div class="relative aspect-[9/16]">
+                    <video controls preload="metadata" class="w-full h-full object-cover">
+                        <source src="{{ asset('videos/videmond.mp4') }}" type="video/mp4">
+                    </video>
+                    
+                    {# Scanning Bar #}
+                    <div class="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                        <div class="absolute top-0 left-0 w-full h-[2px] bg-accent/50 shadow-[0_0_15px_#39ff14] animate-scan"></div>
+                    </div>
+
+                    {# Corner Details #}
+                    <div class="absolute bottom-4 left-4 text-[8px] font-black text-accent/50 tracking-widest uppercase bg-black/60 px-2 py-1 rounded">REC-002</div>
+                </div>
+                <div class="p-4 bg-primary/40 backdrop-blur-md border-t border-white/5">
+                    <span class="text-[9px] font-black text-mauve-light uppercase tracking-widest">Preuve Vidéo // Immonde Plus</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        @keyframes scan {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(200px); }
+        }
+        @keyframes spin-slow {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .animate-scan {
+            animation: scan 2s linear infinite;
+        }
+        .animate-spin-slow {
+            animation: spin-slow 8s linear infinite;
+        }
+        .line-clamp-3 {
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;  
+            overflow: hidden;
+        }
+    </style>
+{% endblock %}

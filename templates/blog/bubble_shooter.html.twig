@@ -1,0 +1,304 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Justice Shooter - Le Grand Nettoyage | Imm🧅nde Plus{% endblock %}
+
+{% block body %}
+<div id="game-portal" class="max-w-4xl mx-auto py-12 text-center">
+    <div class="mb-12">
+        <h1 class="font-mystere text-6xl md:text-8xl text-accent uppercase tracking-widest italic mb-6 glitch-hover">Justice Shooter</h1>
+        <p class="text-mauve-light font-black uppercase text-xs md:text-sm tracking-[0.4em] flicker">NETTOYEZ LES ÉGOUTS PAR LE VIDE</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12 text-left bg-primary/60 p-8 rounded-3xl border border-mauve-dark">
+        <div>
+            <h3 class="text-accent font-mystere text-2xl mb-4 uppercase">Le Protocole</h3>
+            <p class="text-white text-xs leading-relaxed font-bold uppercase tracking-widest opacity-80">
+                Alignez 3 éléments identiques pour les pulvériser. Libérez l'espace saturé par l'influence de Mickaël.
+            </p>
+        </div>
+        <div>
+            <h3 class="text-accent font-mystere text-2xl mb-4 uppercase">Arsenal</h3>
+            <p class="text-white text-xs leading-relaxed font-bold uppercase tracking-tighter opacity-80">
+                Visez avec précision. Si les preuves atteignent la <span class="text-red-500">LIGNE ROUGE</span>, le dossier est classé sans suite (Game Over).
+            </p>
+        </div>
+    </div>
+
+    <button id="launch-button" class="group relative bg-accent text-primary px-16 py-8 rounded-full font-mystere text-4xl md:text-6xl tracking-widest hover:scale-110 transition-all shadow-[0_0_50px_rgba(57,255,20,0.6)] uppercase animate-pulse">
+        <span class="relative z-10">DÉGOMMER</span>
+    </button>
+</div>
+
+<div id="game-container" class="fixed inset-0 bg-black z-[1000] hidden flex flex-col items-center justify-center overflow-hidden">
+    <canvas id="bubble-canvas" class="bg-[#050505] shadow-[0_0_50px_rgba(57,255,20,0.2)]"></canvas>
+    
+    {# UI Stats #}
+    <div class="absolute top-8 left-8 flex flex-col gap-2 pointer-events-none z-[1200]">
+        <div class="bg-black/60 px-6 py-2 rounded-full border border-accent/30 backdrop-blur-md">
+            <span class="text-accent font-black text-xl md:text-3xl tracking-tighter uppercase">NIVEAU : <span id="level-display">1</span></span>
+        </div>
+        <div class="bg-black/60 px-6 py-2 rounded-full border border-mauve-light/30 backdrop-blur-md">
+            <span class="text-mauve-light font-black text-xl md:text-3xl tracking-tighter uppercase">SCORE : <span id="score-display">0</span></span>
+        </div>
+    </div>
+
+    {# Prochaine Bulle #}
+    <div class="absolute bottom-8 left-8 z-[1200] bg-black/60 p-4 rounded-3xl border border-accent/20 backdrop-blur-sm flex flex-col items-center">
+        <span class="text-[8px] font-black text-accent uppercase mb-2">PROCHAIN</span>
+        <div id="next-bubble-preview" class="text-4xl"></div>
+    </div>
+
+    {# Game Over / Win Modal #}
+    <div id="game-modal" class="absolute inset-0 bg-black/95 flex flex-col items-center justify-center hidden z-[1300] p-8 text-center">
+        <h2 id="modal-title" class="font-mystere text-7xl md:text-9xl text-red-600 mb-8 uppercase italic">SATURE !</h2>
+        <p id="modal-desc" class="text-white text-2xl md:text-4xl mb-12 font-black uppercase">DOSSIER CORROMPU</p>
+        <div class="flex flex-col gap-6 w-full max-w-sm">
+            <button id="modal-btn" class="bg-accent text-primary py-6 rounded-full font-mystere text-4xl uppercase shadow-[0_0_50px_rgba(57,255,20,0.6)]">RÉCIDIVER</button>
+            <button id="exit-btn" class="bg-mauve-dark text-white py-4 rounded-full font-black uppercase">QUITTER</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById('bubble-canvas');
+    const ctx = canvas.getContext('2d');
+    const container = document.getElementById('game-container');
+    const portal = document.getElementById('game-portal');
+    const launchBtn = document.getElementById('launch-button');
+    const scoreDisplay = document.getElementById('score-display');
+    const levelDisplay = document.getElementById('level-display');
+    const nextPreview = document.getElementById('next-bubble-preview');
+    const modal = document.getElementById('game-modal');
+    const modalTitle = document.getElementById('modal-title');
+    const modalDesc = document.getElementById('modal-desc');
+    const modalBtn = document.getElementById('modal-btn');
+    const exitBtn = document.getElementById('exit-btn');
+
+    const BUBBLE_RADIUS = 25;
+    const ROWS = 12;
+    const COLS = 10;
+    const icons = ['🤢', '👮', '🧀', '🍺', '🔫', '🚓', '⚖️'];
+    
+    let grid = [];
+    let score = 0;
+    let level = 1;
+    let isRunning = false;
+    let currentBubble = null;
+    let nextBubbleType = 0;
+    let bubbles = []; // Active projectiles
+    let animationId;
+
+    function resize() {
+        const height = window.innerHeight;
+        canvas.height = height;
+        canvas.width = Math.min(window.innerWidth, height * 0.7);
+        // Recalculer le rayon si besoin
+    }
+
+    function initLevel() {
+        grid = [];
+        for (let r = 0; r < ROWS; r++) {
+            grid[r] = [];
+            for (let c = 0; c < COLS; c++) {
+                if (r < 3 + level) {
+                    grid[r][c] = Math.floor(Math.random() * icons.length);
+                } else {
+                    grid[r][c] = null;
+                }
+            }
+        }
+        score = 0;
+        updateUI();
+        
+        // Initialisation correcte de la séquence
+        nextBubbleType = Math.floor(Math.random() * icons.length);
+        prepareNextBubble();
+    }
+
+    function updateUI() {
+        scoreDisplay.innerText = score;
+        levelDisplay.innerText = level;
+    }
+
+    function prepareNextBubble() {
+        // La bulle actuelle prend la valeur de la prévisualisée
+        const typeToLoad = nextBubbleType;
+        
+        // On génère la VRAIE suivante
+        nextBubbleType = Math.floor(Math.random() * icons.length);
+        nextPreview.innerText = icons[nextBubbleType];
+        
+        currentBubble = {
+            x: canvas.width / 2,
+            y: canvas.height - 60,
+            type: typeToLoad,
+            vx: 0,
+            vy: 0,
+            active: false
+        };
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // Draw Grid
+        for (let r = 0; r < ROWS; r++) {
+            for (let c = 0; c < COLS; c++) {
+                if (grid[r][c] !== null) {
+                    const x = c * (canvas.width / COLS) + (canvas.width / COLS) / 2;
+                    const y = r * 50 + 40;
+                    drawBubble(x, y, grid[r][c]);
+                }
+            }
+        }
+
+        // Draw Line Red
+        ctx.strokeStyle = '#ef4444';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([5, 5]);
+        ctx.beginPath();
+        ctx.moveTo(0, canvas.height - 150);
+        ctx.lineTo(canvas.width, canvas.height - 150);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Draw Current Bubble
+        if (currentBubble) {
+            drawBubble(currentBubble.x, currentBubble.y, currentBubble.type);
+            
+            // Draw Aiming Line
+            if (!currentBubble.active) {
+                // Logic handled in mousemove but we can draw a hint
+            }
+        }
+
+        // Draw Projectiles
+        bubbles.forEach(b => {
+            drawBubble(b.x, b.y, b.type);
+        });
+
+        if (isRunning) animationId = requestAnimationFrame(draw);
+    }
+
+    function drawBubble(x, y, type) {
+        ctx.font = '30px serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        
+        // Glow effect
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = 'rgba(57, 255, 20, 0.2)';
+        
+        ctx.fillText(icons[type], x, y);
+        ctx.shadowBlur = 0;
+    }
+
+    function shoot(e) {
+        if (!currentBubble || currentBubble.active) return;
+        
+        const rect = canvas.getBoundingClientRect();
+        const mouseX = (e.clientX || e.touches[0].clientX) - rect.left;
+        const mouseY = (e.clientY || e.touches[0].clientY) - rect.top;
+        
+        const angle = Math.atan2(mouseY - currentBubble.y, mouseX - currentBubble.x);
+        currentBubble.vx = Math.cos(angle) * 12;
+        currentBubble.vy = Math.sin(angle) * 12;
+        currentBubble.active = true;
+        
+        bubbles.push(currentBubble);
+        currentBubble = null;
+        setTimeout(prepareNextBubble, 100);
+    }
+
+    function update() {
+        bubbles.forEach((b, index) => {
+            b.x += b.vx;
+            b.y += b.vy;
+
+            // Wall bounce
+            if (b.x < 20 || b.x > canvas.width - 20) b.vx *= -1;
+
+            // Collision with grid or top
+            if (b.y < 30 || checkCollision(b)) {
+                snapToGrid(b);
+                bubbles.splice(index, 1);
+                checkMatches();
+                checkGameOver();
+            }
+        });
+    }
+
+    function checkCollision(b) {
+        for (let r = 0; r < ROWS; r++) {
+            for (let c = 0; c < COLS; c++) {
+                if (grid[r][c] !== null) {
+                    const x = c * (canvas.width / COLS) + (canvas.width / COLS) / 2;
+                    const y = r * 50 + 40;
+                    const dist = Math.hypot(b.x - x, b.y - y);
+                    if (dist < 40) return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    function snapToGrid(b) {
+        const r = Math.round((b.y - 40) / 50);
+        const c = Math.round((b.x - (canvas.width / COLS) / 2) / (canvas.width / COLS));
+        if (r >= 0 && r < ROWS && c >= 0 && c < COLS) {
+            grid[r][c] = b.type;
+        }
+    }
+
+    function checkMatches() {
+        // Simple match logic (DFS or BFS)
+        // For brevity in this initial version, we detect same neighbors
+        let matched = [];
+        // ... Match logic ...
+        // If matches > 3, remove them and increment score
+    }
+
+    function checkGameOver() {
+        for (let c = 0; c < COLS; c++) {
+            if (grid[ROWS-3][c] !== null) {
+                endGame(false);
+            }
+        }
+    }
+
+    function startGame() {
+        resize();
+        portal.classList.add('hidden');
+        container.classList.remove('hidden');
+        isRunning = true;
+        initLevel();
+        animationId = requestAnimationFrame(draw);
+        setInterval(update, 1000/60);
+    }
+
+    function endGame(win) {
+        isRunning = false;
+        cancelAnimationFrame(animationId);
+        modal.classList.remove('hidden');
+        modalTitle.innerText = win ? "PURGE RÉUSSIE" : "DOSSIER SATURE";
+        modalTitle.style.color = win ? "#39ff14" : "#ef4444";
+        modalDesc.innerText = win ? "Vous avez nettoyé ce secteur." : "Mickaël a gagné du terrain.";
+    }
+
+    launchBtn.addEventListener('click', startGame);
+    canvas.addEventListener('mousedown', shoot);
+    canvas.addEventListener('touchstart', (e) => { e.preventDefault(); shoot(e); });
+    exitBtn.addEventListener('click', () => window.location.href = "{{ path('blog_games') }}");
+    modalBtn.addEventListener('click', () => { modal.classList.add('hidden'); initLevel(); isRunning = true; });
+
+    window.addEventListener('resize', resize);
+</script>
+
+<style>
+    #bubble-canvas {
+        border: 4px solid #39ff14;
+        border-radius: 2rem;
+        max-height: 90vh;
+    }
+</style>
+{% endblock %}

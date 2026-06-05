@@ -1,0 +1,58 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ series.title }} - Série de Films | Imm🧅nde Plus{% endblock %}
+
+{% block body %}
+    <div class="border-b-2 border-accent pb-8 mb-12 flex flex-col md:flex-row items-center gap-8">
+        <div class="relative w-32 h-24 md:w-40 md:h-32 shrink-0">
+            {# macOS style folder structure #}
+            <div class="absolute inset-0 bg-accent/20 rounded-xl border-2 border-accent/40 shadow-lg">
+                <div class="absolute -top-3 left-0 w-12 h-4 bg-accent/40 rounded-t-lg border-x-2 border-t-2 border-accent/40"></div>
+                <div class="absolute inset-2 overflow-hidden rounded-lg bg-black/40 border border-accent/20">
+                    {% if series.image %}
+                        <img src="{{ asset('uploads/films/' ~ series.image) }}" alt="{{ series.title }}" class="w-full h-full object-cover">
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="text-center md:text-left">
+            <h1 class="font-mystere text-4xl md:text-6xl tracking-widest text-accent italic uppercase text-shadow-[0_0_15px_rgba(57,255,20,0.5)]">{{ series.title }}</h1>
+            <p class="text-mauve-light mt-2 font-bold uppercase text-[10px] tracking-[0.3em]">Série complète d'archives exclusives.</p>
+        </div>
+    </div>
+
+    {% if series.description %}
+        <div class="max-w-2xl mx-auto mb-16 bg-primary/40 p-8 rounded-2xl border border-mauve-dark italic text-gray-300 text-center">
+            "{{ series.description }}"
+        </div>
+    {% endif %}
+
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-12 gap-y-16 text-white">
+        {% for film in series.films|filter(f => f.isPublished) %}
+            <article class="flex flex-col group items-center text-center">
+                <a href="{{ path('film_show', {slug: film.slug}) }}" class="block mb-4 relative w-32 h-44 md:w-40 md:h-56 overflow-hidden rounded-lg shadow-[0_10px_30px_rgba(0,0,0,0.5)] border-2 border-mauve-dark group-hover:border-accent transition-all duration-500 group-hover:scale-105 group-hover:rotate-1">
+                    {% if film.image %}
+                        <img src="{{ asset('uploads/films/' ~ film.image) }}" alt="{{ film.title }}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
+                    {% else %}
+                        <div class="w-full h-full bg-mauve-dark flex items-center justify-center text-2xl opacity-40 transition-opacity group-hover:opacity-60 text-accent font-mystere italic tracking-tighter uppercase">Film</div>
+                    {% endif %}
+                    
+                    <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-4">
+                        <span class="text-accent font-black uppercase text-[10px] tracking-widest border border-accent px-2 py-1">Visionner</span>
+                    </div>
+                </a>
+
+                <h2 class="font-mystere text-xl leading-tight mb-1 group-hover:text-accent transition-colors tracking-widest italic uppercase">
+                    <a href="{{ path('film_show', {slug: film.slug}) }}">{{ film.title }}</a>
+                </h2>
+                <time class="text-[9px] font-black uppercase text-mauve-light tracking-tighter opacity-60">Diffusé le {{ film.publishedAt|date('d/m/Y') }}</time>
+            </article>
+        {% endfor %}
+    </div>
+
+    <div class="mt-20 text-center">
+        <a href="{{ path('blog_films') }}" class="inline-flex items-center gap-2 text-mauve-light font-black uppercase text-[10px] tracking-[0.2em] hover:text-accent transition-colors">
+            <span class="text-lg">←</span> Retour à la vidéothèque
+        </a>
+    </div>
+{% endblock %}

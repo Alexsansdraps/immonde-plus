@@ -1,0 +1,4 @@
+framework:
+    validation:
+        # Configuration moved to framework.yaml for global null cache
+        email_validation_mode: html5

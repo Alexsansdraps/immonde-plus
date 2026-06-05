@@ -1,0 +1,300 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Le Snake Immonde | Imm🧅nde Plus{% endblock %}
+
+{% block body %}
+<div id="game-portal" class="flex flex-col items-center justify-center min-h-[60vh] text-center">
+    <div class="mb-12 no-fullscreen">
+        <h1 class="font-mystere text-6xl md:text-8xl text-accent uppercase tracking-widest italic mb-6 glitch-hover">Le Snake Immonde</h1>
+        <p class="text-mauve-light font-black uppercase text-xs md:text-sm tracking-[0.4em] flicker">Une expérience digestive de Mickael Imm🧅nde</p>
+    </div>
+
+    <button id="launch-button" class="group relative bg-accent text-primary px-16 py-8 rounded-full font-mystere text-4xl md:text-6xl tracking-widest hover:scale-110 transition-all shadow-[0_0_50px_rgba(57,255,20,0.6)] uppercase animate-pulse">
+        <span class="relative z-10">LANCER LE CALVAIRE</span>
+    </button>
+
+    <div class="mt-12 no-fullscreen">
+        <p class="text-[10px] font-black uppercase text-mauve-light opacity-50 tracking-widest">Contrôle par glissement (Swipe) recommandé</p>
+    </div>
+</div>
+
+<div id="game-container" class="fixed inset-0 bg-black z-[1000] hidden flex flex-col items-center justify-center overflow-hidden overscroll-none touch-none">
+    <canvas id="snake-game" class="block w-full h-full object-contain cursor-none"></canvas>
+    
+    {# Overlay de Contrôle (Invisible) #}
+    <div id="touch-overlay" class="absolute inset-0 z-[1100]"></div>
+
+    {# Score Overlay #}
+    <div class="absolute top-8 left-0 right-0 flex justify-center pointer-events-none z-[1200]">
+        <div class="bg-black/80 px-6 py-2 rounded-full border border-accent/30 backdrop-blur-md">
+            <span class="text-accent font-black text-2xl md:text-4xl tracking-tighter uppercase flicker">Digestion : <span id="current-score">0</span></span>
+        </div>
+    </div>
+
+    {# Écran Game Over #}
+    <div id="game-over" class="absolute inset-0 bg-black/95 flex flex-col items-center justify-center hidden z-[1300] p-8">
+        <img src="/img/game-over.jpg" alt="GAME OVER" class="absolute inset-0 w-full h-full object-cover opacity-40">
+        <div class="relative z-10 text-center max-w-lg w-full">
+            <h2 class="font-mystere text-7xl md:text-9xl text-red-600 mb-8 shake uppercase italic tracking-tighter">SOCIOPATHÉ !</h2>
+            <p class="text-white text-2xl md:text-4xl mb-12 font-black uppercase tracking-[0.5em]">DÉCHÉANCE : <span id="final-score" class="text-accent">0</span></p>
+            <div class="flex flex-col gap-6">
+                <button id="restart-btn" class="w-full bg-accent text-primary py-6 rounded-full font-mystere text-4xl tracking-widest hover:scale-105 transition-all shadow-[0_0_50px_rgba(57,255,20,0.6)] uppercase">RENAÎTRE</button>
+                <button id="exit-btn" class="w-full bg-mauve-dark text-white py-5 rounded-full font-black uppercase tracking-widest hover:bg-white hover:text-black transition-all">QUITTER L'ABÎME</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById('snake-game');
+    const ctx = canvas.getContext('2d');
+    const scoreElement = document.getElementById('current-score');
+    const finalScoreElement = document.getElementById('final-score');
+    const gameOverScreen = document.getElementById('game-over');
+    const container = document.getElementById('game-container');
+    const portal = document.getElementById('game-portal');
+    const touchOverlay = document.getElementById('touch-overlay');
+    const launchBtn = document.getElementById('launch-button');
+    const restartBtn = document.getElementById('restart-btn');
+    const exitBtn = document.getElementById('exit-btn');
+
+    let gridSize, tileCountX, tileCountY;
+    let score = 0, snake = [], dx = 0, dy = 0, food = {}, slimes = [];
+    let gameSpeed = 150, gameLoop, isRunning = false;
+
+    const snakeHeadImg = new Image();
+    snakeHeadImg.src = '/img/snake.jpg';
+
+    function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        const isMobile = window.innerWidth < 768;
+        gridSize = Math.floor(canvas.width / (isMobile ? 12 : 40));
+        if (gridSize < 20) gridSize = 20;
+        tileCountX = Math.floor(canvas.width / gridSize);
+        tileCountY = Math.floor(canvas.height / gridSize);
+    }
+
+    function requestStart() {
+        if (container.requestFullscreen) {
+            container.requestFullscreen().then(() => {
+                setTimeout(() => {
+                    resizeCanvas();
+                    startSnake();
+                }, 200);
+            }).catch(() => startSnake());
+        } else {
+            startSnake();
+        }
+    }
+
+    function startSnake() {
+        container.classList.remove('hidden');
+        portal.classList.add('hidden');
+        isRunning = true;
+        initGame();
+    }
+
+    document.addEventListener('fullscreenchange', () => {
+        if (!document.fullscreenElement && isRunning) {
+            exitGame();
+        }
+    });
+
+    function initGame() {
+        resizeCanvas();
+        dx = 0; dy = -1;
+        score = 0;
+        scoreElement.innerText = score;
+        snake = [
+            {x: Math.floor(tileCountX/2), y: Math.floor(tileCountY/2)},
+            {x: Math.floor(tileCountX/2), y: Math.floor(tileCountY/2) + 1},
+            {x: Math.floor(tileCountX/2), y: Math.floor(tileCountY/2) + 2}
+        ];
+        slimes = [];
+        spawnFood();
+        for(let i=0; i<3; i++) spawnSlime();
+        if(gameLoop) clearInterval(gameLoop);
+        gameLoop = setInterval(draw, gameSpeed);
+    }
+
+    function spawnFood() {
+        food = {
+            x: Math.floor(Math.random() * (tileCountX - 2)) + 1,
+            y: Math.floor(Math.random() * (tileCountY - 2)) + 1
+        };
+        // On vérifie si la nourriture pop sur le serpent OU sur un slime
+        if (snake.some(s => s.x === food.x && s.y === food.y) || 
+            slimes.some(s => s.x === food.x && s.y === food.y)) {
+            spawnFood();
+        }
+    }
+    function spawnSlime() {
+        const newSlime = {
+            x: Math.floor(Math.random() * (tileCountX - 2)) + 1,
+            y: Math.floor(Math.random() * (tileCountY - 2)) + 1
+        };
+        if (snake.some(s => s.x === newSlime.x && s.y === newSlime.y) || (newSlime.x === food.x && newSlime.y === food.y)) {
+            return spawnSlime();
+        }
+        slimes.push(newSlime);
+    }
+
+    // --- LOGIQUE DE CONTRÔLE PAR SWIPE ---
+    let touchStartX = 0, touchStartY = 0;
+    let swipeThreshold = 30; 
+
+    function handleSwipe(currentX, currentY) {
+        if (!isRunning) return;
+        const dx_swipe = currentX - touchStartX;
+        const dy_swipe = currentY - touchStartY;
+
+        if (Math.abs(dx_swipe) > swipeThreshold || Math.abs(dy_swipe) > swipeThreshold) {
+            if (Math.abs(dx_swipe) > Math.abs(dy_swipe)) {
+                if (dx_swipe > 0 && dx !== -1) { dx = 1; dy = 0; }
+                else if (dx_swipe < 0 && dx !== 1) { dx = -1; dy = 0; }
+            } else {
+                if (dy_swipe > 0 && dy !== -1) { dx = 0; dy = 1; }
+                else if (dy_swipe < 0 && dy !== 1) { dx = 0; dy = -1; }
+            }
+            touchStartX = currentX;
+            touchStartY = currentY;
+        }
+    }
+
+    touchOverlay.addEventListener('touchstart', (e) => {
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+        e.preventDefault();
+    }, {passive: false});
+
+    touchOverlay.addEventListener('touchmove', (e) => {
+        if (!isRunning) return;
+        handleSwipe(e.touches[0].clientX, e.touches[0].clientY);
+        e.preventDefault();
+    }, {passive: false});
+
+    // Fallback souris
+    let isMouseDown = false;
+    touchOverlay.addEventListener('mousedown', (e) => {
+        touchStartX = e.clientX;
+        touchStartY = e.clientY;
+        isMouseDown = true;
+    });
+
+    touchOverlay.addEventListener('mousemove', (e) => {
+        if (!isMouseDown || !isRunning) return;
+        handleSwipe(e.clientX, e.clientY);
+    });
+
+    touchOverlay.addEventListener('mouseup', () => isMouseDown = false);
+
+    function draw() {
+        if (!isRunning) return;
+        const head = {x: snake[0].x + dx, y: snake[0].y + dy};
+
+        if (head.x < 0 || head.x >= tileCountX || head.y < 0 || head.y >= tileCountY ||
+            snake.some(segment => segment.x === head.x && segment.y === head.y) ||
+            slimes.some(s => s.x === head.x && s.y === head.y)) {
+            return gameOver();
+        }
+
+        snake.unshift(head);
+        if (head.x === food.x && head.y === food.y) {
+            score += 10;
+            scoreElement.innerText = score;
+            spawnFood();
+            if (score % 40 === 0) spawnSlime();
+            if (gameSpeed > 60) {
+                clearInterval(gameLoop);
+                gameSpeed -= 4;
+                gameLoop = setInterval(draw, gameSpeed);
+            }
+        } else {
+            snake.pop();
+        }
+
+        ctx.fillStyle = '#050505';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Grid
+        ctx.strokeStyle = 'rgba(57, 255, 20, 0.03)';
+        ctx.lineWidth = 1;
+        for(let i=0; i<=canvas.width; i+=gridSize) { ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height); ctx.stroke(); }
+        for(let i=0; i<=canvas.height; i+=gridSize) { ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(canvas.width, i); ctx.stroke(); }
+
+        // Slimes
+        ctx.fillStyle = '#39ff14';
+        slimes.forEach(s => {
+            ctx.shadowBlur = 20; ctx.shadowColor = '#39ff14';
+            ctx.beginPath(); ctx.arc(s.x * gridSize + gridSize/2, s.y * gridSize + gridSize/2, gridSize/2.4, 0, Math.PI*2); ctx.fill();
+        });
+
+        // Food
+        ctx.shadowBlur = 0;
+        ctx.font = `${gridSize}px serif`;
+        ctx.fillText('🧀', food.x * gridSize, food.y * gridSize + gridSize * 0.85);
+
+        // Snake
+        snake.forEach((segment, index) => {
+            if (index === 0) {
+                ctx.save();
+                ctx.beginPath(); ctx.arc(segment.x * gridSize + gridSize/2, segment.y * gridSize + gridSize/2, gridSize/2, 0, Math.PI*2); ctx.clip();
+                if (snakeHeadImg.complete) ctx.drawImage(snakeHeadImg, segment.x * gridSize, segment.y * gridSize, gridSize, gridSize);
+                else { ctx.fillStyle = '#39ff14'; ctx.fillRect(segment.x * gridSize, segment.y * gridSize, gridSize, gridSize); }
+                ctx.restore();
+                ctx.strokeStyle = '#39ff14'; ctx.lineWidth = 2; ctx.strokeRect(segment.x * gridSize, segment.y * gridSize, gridSize, gridSize);
+            } else {
+                const alpha = 1 - (index / snake.length) * 0.8;
+                ctx.fillStyle = `rgba(57, 255, 20, ${alpha})`;
+                ctx.beginPath();
+                ctx.roundRect(segment.x * gridSize + 1, segment.y * gridSize + 1, gridSize - 2, gridSize - 2, gridSize/4); ctx.fill();
+            }
+        });
+    }
+
+    function gameOver() {
+        isRunning = false;
+        clearInterval(gameLoop);
+        finalScoreElement.innerText = score;
+        gameOverScreen.classList.remove('hidden');
+    }
+
+    function resetGame() {
+        gameOverScreen.classList.add('hidden');
+        gameSpeed = 150;
+        initGame();
+        isRunning = true;
+    }
+
+    function exitGame() {
+        if (document.exitFullscreen && document.fullscreenElement) document.exitFullscreen();
+        gameOverScreen.classList.add('hidden');
+        container.classList.add('hidden');
+        portal.classList.remove('hidden');
+        isRunning = false;
+        clearInterval(gameLoop);
+    }
+
+    launchBtn.addEventListener('click', requestStart);
+    restartBtn.addEventListener('click', resetGame);
+    exitBtn.addEventListener('click', exitGame);
+
+    document.addEventListener('keydown', (e) => {
+        if (!isRunning) return;
+        switch(e.key) {
+            case 'ArrowUp': if(dy !== 1) { dx = 0; dy = -1; } break;
+            case 'ArrowDown': if(dy !== -1) { dx = 0; dy = 1; } break;
+            case 'ArrowLeft': if(dx !== 1) { dx = -1; dy = 0; } break;
+            case 'ArrowRight': if(dx !== -1) { dx = 1; dy = 0; } break;
+        }
+    });
+
+    window.addEventListener('resize', resizeCanvas);
+</script>
+
+<style>
+    #snake-game { image-rendering: pixelated; }
+    .overscroll-none { overscroll-behavior: none; }
+</style>
+{% endblock %}

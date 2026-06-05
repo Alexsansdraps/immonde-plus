@@ -1,0 +1,208 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Écrase le Mickaël - L'Infection Totale | Imm🧅nde Plus{% endblock %}
+
+{% block body %}
+<div id="game-portal" class="max-w-4xl mx-auto py-12 text-center">
+    <div class="mb-12">
+        <h1 class="font-mystere text-6xl md:text-8xl text-accent uppercase tracking-widest italic mb-6 glitch-hover">Écrase le Mickaël</h1>
+        <p class="text-mauve-light font-black uppercase text-xs md:text-sm tracking-[0.4em] flicker">NETTOYAGE CHIRURGICAL DES ÉGOUTS</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12 text-left bg-primary/60 p-8 rounded-3xl border border-mauve-dark">
+        <div>
+            <h3 class="text-accent font-mystere text-2xl mb-4 uppercase">La Mission</h3>
+            <p class="text-white text-xs leading-relaxed font-bold uppercase tracking-widest opacity-80">
+                Mickaël tente de s'infiltrer par les conduits. <span class="text-accent">Écrasez-le</span> avant qu'il ne s'échappe.
+            </p>
+        </div>
+        <div>
+            <h3 class="text-accent font-mystere text-2xl mb-4 uppercase">Avertissement</h3>
+            <p class="text-white text-xs leading-relaxed font-bold uppercase tracking-tighter opacity-80">
+                Ne touchez pas à la <span class="text-blue-500">POLICE</span> 👮. Toute agression envers l'autorité vous coûtera <span class="text-red-500">2 POINTS</span>.
+            </p>
+        </div>
+    </div>
+
+    <button id="launch-button" class="group relative bg-accent text-primary px-16 py-8 rounded-full font-mystere text-4xl md:text-6xl tracking-widest hover:scale-110 transition-all shadow-[0_0_50px_rgba(57,255,20,0.6)] uppercase animate-pulse">
+        <span class="relative z-10">LANCER LA PURGE</span>
+    </button>
+</div>
+
+<div id="game-container" class="max-w-4xl mx-auto py-12 hidden relative overflow-hidden">
+    {# Curseurs personnalisés (Marteau) #}
+    <div id="hammer-cursor" class="fixed w-20 h-20 pointer-events-none z-[1500] hidden md:block" style="transform: translate(-50%, -50%)">
+        <div class="hammer-inner relative w-full h-full transition-transform duration-75 origin-bottom-left">
+            <span class="text-6xl">🔨</span>
+        </div>
+    </div>
+
+    <div class="flex justify-between items-center mb-12">
+        <div class="bg-black/60 px-8 py-4 rounded-full border-2 border-accent/30 backdrop-blur-md">
+            <span class="text-accent font-black text-2xl md:text-4xl tracking-tighter uppercase">SCORE : <span id="score">0</span></span>
+        </div>
+        <div class="bg-black/60 px-8 py-4 rounded-full border-2 border-red-500/30 backdrop-blur-md">
+            <span class="text-red-500 font-black text-2xl md:text-4xl tracking-tighter uppercase">TEMPS : <span id="timer">30</span>s</span>
+        </div>
+    </div>
+
+    <div id="grid-container" class="grid grid-cols-3 gap-4 md:gap-8 cursor-none">
+        {% for i in 0..8 %}
+            <div class="pipe-container relative aspect-square bg-[#0a0a0a] rounded-full border-b-8 border-mauve-dark overflow-hidden shadow-inner">
+                <div class="hole absolute inset-x-0 bottom-0 h-full flex flex-col items-center justify-end transform translate-y-full transition-transform duration-100 ease-out" data-index="{{ i }}">
+                    <div class="target-img w-[80%] h-[80%] relative pointer-events-auto">
+                        <img src="" class="w-full h-full object-cover rounded-full border-4 border-accent shadow-[0_0_20px_rgba(57,255,20,0.4)]" alt="cible">
+                    </div>
+                </div>
+                {# Bord du tuyau #}
+                <div class="absolute bottom-0 w-full h-8 bg-mauve-dark rounded-full"></div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+{# Final Score Modal #}
+<div id="game-over" class="fixed inset-0 bg-black/95 flex flex-col items-center justify-center hidden z-[2000] p-8 text-center">
+    <h2 class="font-mystere text-7xl md:text-9xl text-accent mb-8 uppercase italic">PURGE TERMINÉE</h2>
+    <p class="text-white text-2xl md:text-4xl mb-12 font-black uppercase">MICKAËLS ÉLIMINÉS : <span id="final-score" class="text-accent">0</span></p>
+    <div class="flex flex-col gap-6 w-full max-w-sm">
+        <button id="restart-btn" class="bg-accent text-primary py-6 rounded-full font-mystere text-4xl uppercase shadow-[0_0_50px_rgba(57,255,20,0.6)]">REFAIRE UN TOUR</button>
+        <button id="exit-btn" class="bg-mauve-dark text-white py-4 rounded-full font-black uppercase">RETOURNER À L'OMBRE</button>
+    </div>
+</div>
+
+<script>
+    const holes = document.querySelectorAll('.hole');
+    const scoreEl = document.getElementById('score');
+    const timerEl = document.getElementById('timer');
+    const portal = document.getElementById('game-portal');
+    const container = document.getElementById('game-container');
+    const gameOverScreen = document.getElementById('game-over');
+    const finalScoreEl = document.getElementById('final-score');
+    const hammer = document.getElementById('hammer-cursor');
+    const hammerInner = hammer.querySelector('.hammer-inner');
+    
+    // Suivi de la souris pour le marteau
+    document.addEventListener('mousemove', (e) => {
+        if (!isPlaying) return;
+        hammer.style.left = e.clientX + 'px';
+        hammer.style.top = e.clientY + 'px';
+    });
+
+    let score = 0;
+    let timeLeft = 30;
+    let isPlaying = false;
+    let lastHole;
+    let timerId;
+    let peepTimeout;
+
+    const targetImages = {
+        mickael: '/img/snake.jpg',
+        police: 'https://em-content.zobj.net/source/apple/391/police-officer_1f46e.png' // Fallback emoji icon
+    };
+
+    function randomHole() {
+        const idx = Math.floor(Math.random() * holes.length);
+        const hole = holes[idx];
+        if (hole === lastHole) return randomHole();
+        lastHole = hole;
+        return hole;
+    }
+
+    function peep() {
+        const time = Math.random() * (1000 - 500) + 500 - (score * 5); // Accélère avec le score
+        const hole = randomHole();
+        const isPolice = Math.random() < 0.2; // 20% de chance d'être la police
+        
+        const img = hole.querySelector('img');
+        img.src = isPolice ? targetImages.police : targetImages.mickael;
+        img.classList.toggle('border-blue-500', isPolice);
+        img.classList.toggle('border-accent', !isPolice);
+        hole.dataset.type = isPolice ? 'police' : 'mickael';
+        
+        hole.classList.remove('translate-y-full');
+        
+        peepTimeout = setTimeout(() => {
+            hole.classList.add('translate-y-full');
+            if (isPlaying) peep();
+        }, Math.max(time, 400));
+    }
+
+    function startGame() {
+        score = 0;
+        timeLeft = 30;
+        isPlaying = true;
+        scoreEl.innerText = score;
+        timerEl.innerText = timeLeft;
+        
+        portal.classList.add('hidden');
+        container.classList.remove('hidden');
+        gameOverScreen.classList.add('hidden');
+        hammer.style.display = 'block'; // Afficher le marteau
+
+        peep();
+        
+        timerId = setInterval(() => {
+            timeLeft--;
+            timerEl.innerText = timeLeft;
+            if (timeLeft <= 0) endGame();
+        }, 1000);
+    }
+
+    function endGame() {
+        isPlaying = false;
+        clearInterval(timerId);
+        clearTimeout(peepTimeout);
+        holes.forEach(h => h.classList.add('translate-y-full'));
+        hammer.style.display = 'none'; // Cacher le marteau à la fin
+        finalScoreEl.innerText = score;
+        gameOverScreen.classList.remove('hidden');
+    }
+
+    function hit(e) {
+        if (!isPlaying) return;
+        const hole = e.currentTarget;
+        const type = hole.dataset.type;
+
+        // Animation du marteau
+        hammerInner.style.transform = 'rotate(-45deg)';
+        setTimeout(() => {
+            hammerInner.style.transform = 'rotate(0deg)';
+        }, 100);
+
+        if (type === 'mickael') {
+            score++;
+            // Feedback visuel de coup
+            hole.style.filter = 'brightness(2) contrast(2)';
+            setTimeout(() => hole.style.filter = '', 100);
+        } else {
+            score = Math.max(0, score - 2);
+            // Feedback d'erreur
+            document.body.classList.add('bg-red-900');
+            setTimeout(() => document.body.classList.remove('bg-red-900'), 100);
+        }
+        
+        scoreEl.innerText = score;
+        hole.classList.add('translate-y-full');
+    }
+
+    holes.forEach(hole => hole.addEventListener('mousedown', hit));
+    holes.forEach(hole => hole.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        hit(e);
+    }));
+
+    document.getElementById('launch-button').addEventListener('click', startGame);
+    document.getElementById('restart-btn').addEventListener('click', startGame);
+    document.getElementById('exit-btn').addEventListener('click', () => {
+        window.location.href = "{{ path('blog_games') }}";
+    });
+</script>
+
+<style>
+    .pipe-container {
+        background: radial-gradient(circle at center, #1a1a1a 0%, #000000 100%);
+    }
+    .backface-hidden { backface-visibility: hidden; }
+</style>
+{% endblock %}

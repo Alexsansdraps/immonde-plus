@@ -1,0 +1,158 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Les Jeux - Imm🧅nde Plus{% endblock %}
+
+{% block body %}
+    <div id="jeux-index">
+        <div class="border-b-2 border-accent pb-8 mb-12">
+            <h1 class="font-mystere text-5xl tracking-widest text-accent italic uppercase text-shadow-[0_0_15px_rgba(57,255,20,0.5)]">Les Jeux</h1>
+            <p class="text-mauve-light mt-2 font-bold uppercase text-[10px] tracking-[0.3em]">Expériences digestives et divertissements de l'ombre.</p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-12 text-white px-4 md:px-0">
+            {# Mickaël World #}
+            <article onclick="window.location.href='{{ path('blog_game_mickael_world') }}'" class="group relative flex flex-col bg-primary/40 rounded-3xl border-2 border-mauve-dark hover:border-accent overflow-hidden transition-all duration-500 shadow-2xl hover:scale-105 cursor-pointer">
+                <div class="aspect-video overflow-hidden">
+                    <img src="/img/snake.jpg" alt="Mickaël World" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700">
+                    <div class="absolute inset-0 bg-black/60 group-hover:bg-black/20 transition-all"></div>
+                </div>
+                
+                <div class="p-8 relative">
+                    <h2 class="font-mystere text-4xl mb-4 group-hover:text-accent transition-colors tracking-widest uppercase italic">
+                        Mickaël World
+                    </h2>
+                    <p class="text-xs text-mauve-light font-bold uppercase tracking-widest leading-relaxed mb-8 opacity-70">
+                        ÉVADE-TOI DES ÉGOUTS : Saute sur les déchets et neutralise la police au fromage.
+                    </p>
+                    
+                    <button class="w-full bg-accent text-primary py-4 rounded-full font-mystere text-2xl tracking-widest uppercase shadow-[0_0_20px_rgba(57,255,20,0.4)] pointer-events-none">
+                        LANCER L'ÉVASION
+                    </button>
+                </div>
+                
+                <div class="absolute top-4 right-4 bg-accent text-primary text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest animate-pulse">
+                    RUNNER
+                </div>
+            </article>
+
+            {# Le Labyrinthe des Doubles #}
+            <article onclick="window.location.href='{{ path('blog_game_paires') }}'" class="group relative flex flex-col bg-primary/40 rounded-3xl border-2 border-mauve-dark hover:border-accent overflow-hidden transition-all duration-500 shadow-2xl hover:scale-105 cursor-pointer">
+                <div class="aspect-video overflow-hidden">
+                    <img src="/img/jeu-paires/received_334888457205498.png" alt="Le Labyrinthe des Doubles" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700">
+                    <div class="absolute inset-0 bg-black/60 group-hover:bg-black/20 transition-all"></div>
+                </div>
+                
+                <div class="p-8 relative">
+                    <h2 class="font-mystere text-4xl mb-4 group-hover:text-accent transition-colors tracking-widest uppercase italic">
+                        Le Labyrinthe
+                    </h2>
+                    <p class="text-xs text-mauve-light font-bold uppercase tracking-widest leading-relaxed mb-8 opacity-70">
+                        LES DOUBLES DÉMONIAQUES : Retrouve les paires de Mickaël avant que ton cerveau ne sature (5 erreurs max).
+                    </p>
+                    
+                    <button class="w-full bg-accent text-primary py-4 rounded-full font-mystere text-2xl tracking-widest uppercase shadow-[0_0_20px_rgba(57,255,20,0.4)] pointer-events-none">
+                        IDENTIFIER
+                    </button>
+                </div>
+                
+                <div class="absolute top-4 right-4 bg-accent text-primary text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest animate-pulse">
+                    MÉMOIRE
+                </div>
+            </article>
+
+            {# Écrase le Mickaël #}
+            <article onclick="window.location.href='{{ path('blog_game_ecrase') }}'" class="group relative flex flex-col bg-primary/40 rounded-3xl border-2 border-mauve-dark hover:border-accent overflow-hidden transition-all duration-500 shadow-2xl hover:scale-105 cursor-pointer">
+                <div class="aspect-video overflow-hidden">
+                    <img src="/img/snake.jpg" alt="Écrase le Mickaël" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700">
+                    <div class="absolute inset-0 bg-black/60 group-hover:bg-black/20 transition-all"></div>
+                </div>
+                
+                <div class="p-8 relative">
+                    <h2 class="font-mystere text-4xl mb-4 group-hover:text-accent transition-colors tracking-widest uppercase italic">
+                        Écrase le Mickaël
+                    </h2>
+                    <p class="text-xs text-mauve-light font-bold uppercase tracking-widest leading-relaxed mb-8 opacity-70">
+                        LA PURGE DES ÉGOUTS : Tape sur Mickaël dès qu'il sort d'un tuyau. Évite la police !
+                    </p>
+                    
+                    <button class="w-full bg-accent text-primary py-4 rounded-full font-mystere text-2xl tracking-widest uppercase shadow-[0_0_20px_rgba(57,255,20,0.4)] pointer-events-none">
+                        ÉCRASER
+                    </button>
+                </div>
+                
+                <div class="absolute top-4 right-4 bg-accent text-primary text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest animate-pulse">
+                    RÉFLEXE
+                </div>
+            </article>
+
+            {# Justice Shooter #}
+            <article onclick="window.location.href='{{ path('blog_game_shooter') }}'" class="group relative flex flex-col bg-primary/40 rounded-3xl border-2 border-mauve-dark hover:border-accent overflow-hidden transition-all duration-500 shadow-2xl hover:scale-105 cursor-pointer">
+                <div class="aspect-video overflow-hidden">
+                    <img src="/img/snake.jpg" alt="Justice Shooter" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700">
+                    <div class="absolute inset-0 bg-black/60 group-hover:bg-black/20 transition-all"></div>
+                </div>
+                
+                <div class="p-8 relative">
+                    <h2 class="font-mystere text-4xl mb-4 group-hover:text-accent transition-colors tracking-widest uppercase italic">
+                        Justice Shooter
+                    </h2>
+                    <p class="text-xs text-mauve-light font-bold uppercase tracking-widest leading-relaxed mb-8 opacity-70">
+                        LE GRAND NETTOYAGE : Alignez les preuves (slime, police, fromage) pour purifier les égoûts.
+                    </p>
+                    
+                    <button class="w-full bg-accent text-primary py-4 rounded-full font-mystere text-2xl tracking-widest uppercase shadow-[0_0_20px_rgba(57,255,20,0.4)] pointer-events-none">
+                        PURIFIER
+                    </button>
+                </div>
+                
+                <div class="absolute top-4 right-4 bg-accent text-primary text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest animate-pulse">
+                    NOUVEAU
+                </div>
+            </article>
+
+            {# Le Snake Immonde #}
+            <article onclick="window.location.href='{{ path('blog_game_snake') }}'" class="group relative flex flex-col bg-primary/40 rounded-3xl border-2 border-mauve-dark hover:border-accent overflow-hidden transition-all duration-500 shadow-2xl hover:scale-105 cursor-pointer">
+                <div class="aspect-video overflow-hidden">
+                    <img src="/img/snake.jpg" alt="Le Snake Immonde" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700">
+                    <div class="absolute inset-0 bg-black/60 group-hover:bg-black/20 transition-all"></div>
+                </div>
+                
+                <div class="p-8 relative">
+                    <h2 class="font-mystere text-4xl mb-4 group-hover:text-accent transition-colors tracking-widest uppercase italic">
+                        Le Snake Immonde
+                    </h2>
+                    <p class="text-xs text-mauve-light font-bold uppercase tracking-widest leading-relaxed mb-8 opacity-70">
+                        GUIDE LA VERMINE : Touche l'écran pour attirer la bête vers ton doigt.
+                    </p>
+                    
+                    <button class="w-full bg-accent text-primary py-4 rounded-full font-mystere text-2xl tracking-widest uppercase shadow-[0_0_20px_rgba(57,255,20,0.4)] pointer-events-none">
+                        DÉBUTER L'INFECTION
+                    </button>
+                </div>
+                
+                <div class="absolute top-4 right-4 bg-accent text-primary text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest animate-pulse">
+                    INFECTÉ
+                </div>
+            </article>
+
+            {# Slots vides #}
+            <div class="flex flex-col items-center justify-center bg-black/20 rounded-3xl border-2 border-dashed border-mauve-dark/40 p-12 text-center opacity-40">
+                <span class="text-4xl mb-4">🔒</span>
+                <h3 class="font-mystere text-xl uppercase tracking-widest">Archive Corrompue</h3>
+                <p class="text-[8px] uppercase font-black tracking-tighter mt-2">Accès refusé par l'administrateur</p>
+            </div>
+
+            <div class="flex flex-col items-center justify-center bg-black/20 rounded-3xl border-2 border-dashed border-mauve-dark/40 p-12 text-center opacity-40">
+                <span class="text-4xl mb-4">🔒</span>
+                <h3 class="font-mystere text-xl uppercase tracking-widest">Archive Corrompue</h3>
+                <p class="text-[8px] uppercase font-black tracking-tighter mt-2">Accès refusé par l'administrateur</p>
+            </div>
+        </div>
+
+        <div class="mt-20 text-center">
+            <p class="text-[10px] font-black uppercase text-mauve-light tracking-[0.5em] flicker">
+                PLUS D'EXPÉRIENCES EN COURS DE DÉVELOPPEMENT
+            </p>
+        </div>
+    </div>
+{% endblock %}

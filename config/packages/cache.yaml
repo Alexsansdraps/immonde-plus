@@ -1,0 +1,16 @@
+framework:
+    cache:
+        # Désactivation totale de l'APCu qui corrompt les données sur IONOS
+        app: cache.adapter.filesystem
+        system: cache.adapter.filesystem
+
+        pools:
+            # On force ces pools sur le système de fichiers pour éviter tout conflit APCu
+            cache.validator:
+                adapter: cache.adapter.filesystem
+            cache.serializer:
+                adapter: cache.adapter.filesystem
+            cache.property_info:
+                adapter: cache.adapter.filesystem
+            cache.annotations:
+                adapter: cache.adapter.system

@@ -1,0 +1,303 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mickaël World - L'Évasion Immonde | Imm🧅nde Plus{% endblock %}
+
+{% block body %}
+<div id="game-portal" class="flex flex-col items-center justify-center min-h-[60vh] text-center">
+    <div class="mb-12">
+        <h1 class="font-mystere text-6xl md:text-8xl text-accent uppercase tracking-widest italic mb-6 glitch-hover">Mickaël World</h1>
+        <p class="text-mauve-light font-black uppercase text-xs md:text-sm tracking-[0.4em] flicker">COURSE INFINIE DANS LES ÉGOUTS</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mb-12 text-left bg-primary/60 p-8 rounded-3xl border border-mauve-dark">
+        <div>
+            <h3 class="text-accent font-mystere text-2xl mb-4 uppercase">Commandes</h3>
+            <ul class="text-white space-y-2 text-sm font-bold uppercase tracking-widest">
+                <li><span class="text-accent">TAP ÉCRAN / ESPACE</span> : Sauter</li>
+                <li><span class="text-accent">BOUTON 🧀 / TOUCHE X</span> : Lancer du Fromage</li>
+            </ul>
+        </div>
+        <div>
+            <h3 class="text-accent font-mystere text-2xl mb-4 uppercase">Objectif</h3>
+            <p class="text-white text-xs leading-relaxed font-bold uppercase tracking-tighter opacity-80">
+                Mickaël avance seul. Esquivez la <span class="text-blue-500">Police</span> et le <span class="text-accent">Slime</span>. Sautez sur les amas de déchets.
+            </p>
+        </div>
+    </div>
+
+    <button id="launch-button" class="group relative bg-accent text-primary px-16 py-8 rounded-full font-mystere text-4xl md:text-6xl tracking-widest hover:scale-110 transition-all shadow-[0_0_50px_rgba(57,255,20,0.6)] uppercase animate-pulse">
+        <span class="relative z-10">TENTER L'ÉVASION</span>
+    </button>
+</div>
+
+<div id="game-container" class="fixed inset-0 bg-black z-[1000] hidden flex flex-col items-center justify-center overflow-hidden overscroll-none touch-none">
+    <canvas id="mickael-world" class="block w-full h-full object-contain bg-[#050505]"></canvas>
+    
+    {# Zone de clic pour le saut (Tout l'écran) #}
+    <div id="jump-zone" class="absolute inset-0 z-[1100]"></div>
+
+    {# Bouton unique pour le Fromage #}
+    <div class="absolute bottom-8 right-8 z-[1200]">
+        <button id="shoot-btn" class="w-24 h-24 md:w-32 md:h-32 bg-yellow-500/20 rounded-full border-4 border-yellow-500/40 active:scale-95 active:bg-yellow-500/60 flex items-center justify-center shadow-[0_0_30px_rgba(234,179,8,0.3)]">
+            <span class="text-5xl md:text-7xl pointer-events-none">🧀</span>
+        </button>
+    </div>
+
+    {# UI Stats #}
+    <div class="absolute top-8 left-8 flex flex-col gap-2 pointer-events-none z-[1200]">
+        <div class="bg-black/60 px-6 py-2 rounded-full border border-accent/30 backdrop-blur-md">
+            <span class="text-accent font-black text-xl md:text-3xl tracking-tighter uppercase">SCORE : <span id="cheese-count">0</span></span>
+        </div>
+        <div class="bg-black/60 px-6 py-2 rounded-full border border-red-500/30 backdrop-blur-md">
+            <span class="text-red-500 font-black text-xl md:text-3xl tracking-tighter uppercase">DÉTRAQUE : <span id="life-count">3</span></span>
+        </div>
+    </div>
+
+    {# Game Over #}
+    <div id="game-over" class="absolute inset-0 bg-black/95 flex flex-col items-center justify-center hidden z-[1300] p-8 text-center">
+        <h2 class="font-mystere text-7xl md:text-9xl text-red-600 mb-8 shake uppercase italic">INCARCÉRÉ !</h2>
+        <p class="text-white text-2xl md:text-4xl mb-12 font-black uppercase">SCORE FINAL : <span id="final-score" class="text-accent">0</span></p>
+        <div class="flex flex-col gap-6 w-full max-w-sm">
+            <button id="restart-btn" class="bg-accent text-primary py-6 rounded-full font-mystere text-4xl uppercase shadow-[0_0_50px_rgba(57,255,20,0.6)]">RÉCIDIVER</button>
+            <button id="exit-btn" class="bg-mauve-dark text-white py-4 rounded-full font-black uppercase">QUITTER L'ÉGOÛT</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById('mickael-world');
+    const ctx = canvas.getContext('2d');
+    const container = document.getElementById('game-container');
+    const portal = document.getElementById('game-portal');
+    const gameOverScreen = document.getElementById('game-over');
+    const cheeseCountEl = document.getElementById('cheese-count');
+    const lifeCountEl = document.getElementById('life-count');
+    const finalScoreEl = document.getElementById('final-score');
+    const launchBtn = document.getElementById('launch-button');
+    const jumpZone = document.getElementById('jump-zone');
+    const shootBtn = document.getElementById('shoot-btn');
+    const restartBtn = document.getElementById('restart-btn');
+    const exitBtn = document.getElementById('exit-btn');
+
+    const mickaelHead = new Image();
+    mickaelHead.src = '/img/snake.jpg';
+
+    const GRAVITY = 0.5; // Un peu plus léger pour planer
+    const JUMP_FORCE = -16; // Plus de puissance de saut
+    const START_SPEED = 6;
+    const SPEED_INCREMENT = 0.0006;
+
+    let isRunning = false;
+    let score = 0, lives = 3, cameraX = 0, currentSpeed = START_SPEED;
+    let gameLoop;
+    let coyoteTime = 0; // Pour être plus permissif sur les bords
+
+    let player = { x: 100, y: 300, w: 50, h: 50, vx: 0, vy: 0, grounded: false, cheeses: [] };
+    let platforms = [], enemies = [], drops = [], lastPlatformX = 0;
+
+    const input = { jump: false, shoot: false, lastShoot: 0 };
+
+    function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+
+    function requestStart() {
+        if (container.requestFullscreen) {
+            container.requestFullscreen().then(() => setTimeout(startGame, 200)).catch(startGame);
+        } else startGame();
+    }
+
+    function startGame() {
+        resize();
+        container.classList.remove('hidden');
+        portal.classList.add('hidden');
+        isRunning = true;
+        initLevel();
+        gameLoop = requestAnimationFrame(update);
+    }
+
+    function initLevel() {
+        score = 0; lives = 3; cameraX = 0; currentSpeed = START_SPEED;
+        
+        // Spawn relatif à la taille de l'écran
+        const groundY = canvas.height - 100;
+        player.x = 100; 
+        player.y = groundY - player.h - 50; 
+        player.vx = currentSpeed; player.vy = 0;
+        player.cheeses = []; drops = []; platforms = []; enemies = [];
+        
+        // Sol de départ
+        platforms.push({ x: 0, y: groundY, w: 2000, h: 100, type: 'ground' });
+        lastPlatformX = 2000;
+        updateUI();
+    }
+
+    function generateWorld() {
+        while (lastPlatformX < player.x + canvas.width + 1000) {
+            const isVeryStart = lastPlatformX < 3000;
+            const gap = isVeryStart ? 100 : (140 + Math.random() * 150);
+            const width = isVeryStart ? 500 : (200 + Math.random() * 300);
+            
+            // Hauteur limitée : on ne monte pas trop haut
+            // On reste dans une zone de sauts atteignables (max 250px au dessus du sol)
+            const minY = canvas.height - 400; // Plus haut point
+            const maxY = canvas.height - 150; // Plus bas point
+            const y = maxY - Math.random() * (maxY - minY);
+            
+            platforms.push({ x: lastPlatformX + gap, y: y, w: width, h: 40, type: 'trash', seed: Math.random() });
+            
+            if (Math.random() < 0.7) {
+                enemies.push({ x: lastPlatformX + gap + width/2, y: y - 45, w: 45, h: 45, type: ['police', 'slime', 'onion'][Math.floor(Math.random()*3)], vx: -1, alive: true });
+            }
+            lastPlatformX += gap + width;
+        }
+        platforms = platforms.filter(p => p.x + p.w > player.x - 500);
+        enemies = enemies.filter(e => e.x > player.x - 500);
+        drops = drops.filter(d => d.x > player.x - 500);
+    }
+
+    function updateUI() {
+        cheeseCountEl.innerText = score;
+        lifeCountEl.innerText = lives;
+    }
+
+    function update() {
+        if (!isRunning) return;
+
+        currentSpeed += SPEED_INCREMENT;
+        player.vx = currentSpeed;
+
+        if (player.grounded) coyoteTime = 5; // On peut sauter même un peu après le bord
+        else coyoteTime--;
+
+        if (input.jump && coyoteTime > 0) {
+            player.vy = JUMP_FORCE;
+            player.grounded = false;
+            coyoteTime = 0;
+        }
+        input.jump = false;
+
+        if (input.shoot && Date.now() - input.lastShoot > 400) {
+            player.cheeses.push({ x: player.x + player.w, y: player.y + player.h/2, vx: currentSpeed + 12, vy: -2 });
+            input.lastShoot = Date.now();
+        }
+        input.shoot = false;
+
+        player.vy += GRAVITY;
+        player.x += player.vx;
+        player.y += player.vy;
+
+        if (player.y > canvas.height + 100) { gameOver(); return; }
+
+        generateWorld();
+
+        player.grounded = false;
+        platforms.forEach(p => {
+            if (player.vy >= 0 && player.x + player.w - 10 > p.x && player.x + 10 < p.x + p.w && player.y + player.h > p.y && player.y + player.h < p.y + p.h + player.vy + 5) {
+                player.y = p.y - player.h; player.vy = 0; player.grounded = true;
+            }
+        });
+
+        cameraX = player.x - 100;
+
+        enemies.forEach(e => {
+            if (!e.alive) return;
+            e.x += e.vx;
+            if (Math.abs((player.x + player.w/2) - (e.x + e.w/2)) < 40 && Math.abs((player.y + player.h/2) - (e.y + e.h/2)) < 40) { takeDamage(); e.alive = false; }
+            player.cheeses.forEach(c => { if (Math.abs(c.x - e.x) < 45 && Math.abs(c.y - e.y) < 45) { e.alive = false; score += 10; updateUI(); } });
+        });
+
+        if (Math.random() < 0.02 + (currentSpeed / 700)) {
+            drops.push({ x: player.x + canvas.width + Math.random() * 500, y: -50, vy: 6 + Math.random() * 6 });
+        }
+        drops.forEach((d, index) => {
+            d.y += d.vy;
+            if (Math.abs(d.x - (player.x + player.w/2)) < 35 && Math.abs(d.y - (player.y + player.h/2)) < 35) { takeDamage(); drops.splice(index, 1); }
+        });
+
+        player.cheeses.forEach((c, index) => {
+            c.x += c.vx; c.y += c.vy; c.vy += 0.12;
+            if (c.x > player.x + canvas.width) player.cheeses.splice(index, 1);
+        });
+
+        draw();
+        gameLoop = requestAnimationFrame(update);
+    }
+
+    function takeDamage() {
+        lives--; updateUI();
+        if (lives <= 0) gameOver();
+        canvas.style.filter = 'invert(1)';
+        setTimeout(() => canvas.style.filter = '', 100);
+    }
+
+    function drawTrash(x, y, w, h, seed) {
+        ctx.save(); ctx.translate(x, y);
+        ctx.fillStyle = '#0f0f0f'; ctx.beginPath(); ctx.ellipse(w/2, h/2, w/2, h/2, 0, 0, Math.PI*2); ctx.fill();
+        const colors = ['#4a4a4a', '#2d2d2d', '#5c4a33', '#1a1a1a'];
+        for (let i = 0; i < 6; i++) {
+            const posX = (seed * 100 + i * 20) % w; const posY = (seed * 200 + i * 15) % h;
+            ctx.fillStyle = colors[i % colors.length];
+            if (i % 2 === 0) ctx.fillRect(posX, posY, 22, 22);
+            else { ctx.beginPath(); ctx.arc(posX, posY, 12, 0, Math.PI*2); ctx.fill(); }
+        }
+        ctx.strokeStyle = '#39ff1433'; ctx.lineWidth = 1; ctx.strokeRect(0, 0, w, h);
+        ctx.restore();
+    }
+
+    function draw() {
+        ctx.fillStyle = '#050505'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.save(); ctx.translate(-cameraX, 0);
+        ctx.strokeStyle = '#111';
+        const startG = Math.floor(cameraX/100)*100;
+        for (let i = startG; i < cameraX + canvas.width + 100; i += 100) { ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height); ctx.stroke(); }
+        platforms.forEach(p => {
+            if (p.type === 'ground') { ctx.fillStyle = '#0a0a0a'; ctx.fillRect(p.x, p.y, p.w, p.h); for (let x = 0; x < p.w; x += 100) drawTrash(p.x + x, p.y - 10, 80, 25, x); }
+            else drawTrash(p.x, p.y, p.w, p.h, p.seed);
+        });
+        ctx.fillStyle = '#39ff14'; ctx.shadowBlur = 10; ctx.shadowColor = '#39ff14';
+        drops.forEach(d => { ctx.beginPath(); ctx.moveTo(d.x, d.y); ctx.quadraticCurveTo(d.x+12, d.y+25, d.x, d.y+35); ctx.quadraticCurveTo(d.x-12, d.y+25, d.x, d.y); ctx.fill(); });
+        ctx.shadowBlur = 0;
+        enemies.forEach(e => {
+            if (!e.alive) return;
+            let emoji = '👮', color = '#3b82f6';
+            if (e.type === 'slime') { emoji = '🤢'; color = '#39ff14'; } else if (e.type === 'onion') { emoji = '🧅'; color = '#ffffff'; }
+            ctx.shadowBlur = 20; ctx.shadowColor = color; ctx.font = '50px serif'; ctx.fillText(emoji, e.x, e.y + 40); ctx.shadowBlur = 0;
+        });
+        ctx.font = '40px serif'; ctx.shadowBlur = 15; ctx.shadowColor = '#fbbf24';
+        player.cheeses.forEach(c => ctx.fillText('🧀', c.x, c.y));
+        ctx.shadowBlur = 0;
+        ctx.save(); ctx.beginPath(); ctx.arc(player.x+player.w/2, player.y+player.h/2, player.w/2, 0, Math.PI*2); ctx.clip();
+        if (mickaelHead.complete) ctx.drawImage(mickaelHead, player.x, player.y, player.w, player.h);
+        else { ctx.fillStyle = '#39ff14'; ctx.fillRect(player.x, player.y, player.w, player.h); }
+        ctx.restore(); ctx.strokeStyle = '#39ff14'; ctx.lineWidth = 3; ctx.strokeRect(player.x, player.y, player.w, player.h);
+        ctx.restore();
+    }
+
+    function gameOver() { isRunning = false; cancelAnimationFrame(gameLoop); finalScoreEl.innerText = score; gameOverScreen.classList.remove('hidden'); }
+    function resetGame() { gameOverScreen.classList.add('hidden'); initLevel(); isRunning = true; gameLoop = requestAnimationFrame(update); }
+    function exitGame() { if (document.exitFullscreen && document.fullscreenElement) document.exitFullscreen(); isRunning = false; cancelAnimationFrame(gameLoop); container.classList.add('hidden'); portal.classList.remove('hidden'); gameOverScreen.classList.add('hidden'); }
+
+    // Event Listeners Propres
+    launchBtn.addEventListener('click', requestStart);
+    restartBtn.addEventListener('click', resetGame);
+    exitBtn.addEventListener('click', exitGame);
+
+    jumpZone.addEventListener('mousedown', (e) => { input.jump = true; });
+    jumpZone.addEventListener('touchstart', (e) => { e.preventDefault(); input.jump = true; }, {passive: false});
+
+    shootBtn.addEventListener('mousedown', (e) => { e.stopPropagation(); input.shoot = true; });
+    shootBtn.addEventListener('touchstart', (e) => { e.preventDefault(); e.stopPropagation(); input.shoot = true; }, {passive: false});
+
+    window.addEventListener('keydown', e => {
+        if (e.code === 'ArrowUp' || e.code === 'Space') input.jump = true;
+        if (e.code === 'KeyX' || e.code === 'ControlLeft') input.shoot = true;
+    });
+    window.addEventListener('resize', resize);
+</script>
+
+<style>
+    canvas { image-rendering: pixelated; }
+</style>
+{% endblock %}

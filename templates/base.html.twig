@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="fr">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{% block title %}Imm🧅nde Plus | Vérités sur Mickael Imm🧅nde (Emond Plus){% endblock %}</title>
+        <meta name="description" content="{% block meta_description %}Imm🧅nde Plus (souvent recherché comme Emond Plus) : Le seul média qui ose lever le voile sur Mickael Imm🧅nde. Articles, révélations et analyses sans concession.{% endblock %}">
+        <meta name="keywords" content="Mickael Immonde, Emond Plus, Mickael Emond, Pelure d'Oignon, Immonde Plus, Révélations, Enquêtes paranormales">
+        
+        <!-- Google Tag Manager -->
+        <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+        new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+        j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+        'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+        })(window,document,'script','dataLayer','GTM-NHKVMFJR');</script>
+        <!-- End Google Tag Manager -->
+
+        {% block seo %}
+            <meta property="og:title" content="{{ block('title') }}">
+            <meta property="og:description" content="{{ block('meta_description') }}">
+            <meta property="og:type" content="website">
+            <meta property="og:url" content="{{ app.request.uri }}">
+            <meta property="og:site_name" content="Imm🧅nde Plus">
+            {% block og_image_block %}
+                {% if block('og_image') is defined and block('og_image') is not empty %}
+                    <meta property="og:image" content="{{ block('og_image')|trim }}">
+                {% endif %}
+            {% endblock %}
+            <meta name="twitter:card" content="summary_large_image">
+        {% endblock %}
+
+        {% if app.request.server.get('GOOGLE_ANALYTICS_ID') %}
+            <!-- Google tag (gtag.js) -->
+            <script async src="https://www.googletagmanager.com/gtag/js?id={{ app.request.server.get('GOOGLE_ANALYTICS_ID') }}"></script>
+            <script>
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', '{{ app.request.server.get('GOOGLE_ANALYTICS_ID') }}');
+            </script>
+        {% endif %}
+
+        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>🧅</text></svg>">
+        
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Creepster&family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script>
+            tailwind.config = {
+                theme: {
+                    extend: {
+                        fontFamily: {
+                            mystere: ['Creepster', 'system-ui'],
+                            serif: ['Playfair Display', 'serif'],
+                            sans: ['Inter', 'sans-serif'],
+                        },
+                        colors: {
+                            primary: '#1a1a1a',
+                            accent: '#39ff14', 
+                            mauve: {
+                                light: '#b794f4',
+                                DEFAULT: '#805ad5',
+                                dark: '#44337a',
+                            }
+                        }
+                    }
+                }
+            }
+        </script>
+
+        <style>
+            :root {
+                --accent-color: #39ff14;
+                --primary-bg: rgba(10, 10, 10, 0.96);
+                --mauve-deep: #44337a;
+                --mauve-mid: #805ad5;
+                --mauve-light: #b794f4;
+            }
+
+            body {
+                background: linear-gradient(135deg, var(--mauve-deep) 0%, var(--mauve-mid) 50%, var(--mauve-light) 100%);
+                background-attachment: fixed;
+                cursor: crosshair;
+            }
+
+            .main-content-container {
+                background: var(--primary-bg);
+                position: relative;
+                box-shadow: 
+                    0 0 100px rgba(0,0,0,0.9), 
+                    0 0 30px rgba(57, 255, 20, 0.1),
+                    inset 0 0 20px rgba(57, 255, 20, 0.05);
+                backdrop-filter: blur(16px);
+                z-index: 20;
+                border: 2px solid rgba(57, 255, 20, 0.3);
+                border-radius: 3rem;
+                animation: neon-pulse 4s infinite ease-in-out;
+            }
+
+            @keyframes neon-pulse {
+                0%, 100% { border-color: rgba(57, 255, 20, 0.3); box-shadow: 0 0 40px rgba(57, 255, 20, 0.1); }
+                50% { border-color: rgba(57, 255, 20, 0.6); box-shadow: 0 0 60px rgba(57, 255, 20, 0.3); }
+            }
+
+            @keyframes scan-slow {
+                0% { transform: translateY(-100%); }
+                100% { transform: translateY(1000%); }
+            }
+
+            .animate-scan-slow {
+                animation: scan-slow 8s linear infinite;
+            }
+
+            /* Decorative Corner Brackets */
+            .gadget-corner {
+                position: absolute;
+                width: 40px;
+                height: 40px;
+                border: 3px solid var(--accent-color);
+                z-index: 30;
+                pointer-events: none;
+                opacity: 0.6;
+            }
+            .corner-tl { top: 20px; left: 20px; border-right: none; border-bottom: none; border-top-left-radius: 1rem; }
+            .corner-tr { top: 20px; right: 20px; border-left: none; border-bottom: none; border-top-right-radius: 1rem; }
+            .corner-bl { bottom: 20px; left: 20px; border-right: none; border-top: none; border-bottom-left-radius: 1rem; }
+            .corner-br { bottom: 20px; right: 20px; border-left: none; border-top: none; border-bottom-right-radius: 1rem; }
+
+            #slime-rain-canvas, #edge-slime-canvas {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                pointer-events: none;
+                z-index: 5;
+            }
+
+            .gooey-filter {
+                filter: url("#gooey-slime");
+            }
+
+            @keyframes glitch {
+                0% { transform: translate(0); text-shadow: -2px 0 var(--accent-color), 2px 0 var(--mauve-mid); }
+                25% { transform: translate(-1px, 1px); }
+                50% { transform: translate(-1px, -1px); text-shadow: 2px 0 var(--accent-color), -2px 0 var(--mauve-mid); }
+                75% { transform: translate(1px, 1px); }
+                100% { transform: translate(0); }
+            }
+
+            .glitch-hover:hover {
+                animation: glitch 0.4s infinite linear;
+            }
+
+            @keyframes spooky-float {
+                0%, 100% { transform: translateY(0) rotate(0deg); }
+                25% { transform: translateY(-10px) rotate(1deg); }
+                75% { transform: translateY(10px) rotate(-1deg); }
+            }
+
+            .spooky-float {
+                animation: spooky-float 4s ease-in-out infinite;
+            }
+
+            @keyframes flicker {
+                0%, 19.999%, 22%, 62.999%, 64%, 64.999%, 70%, 100% { opacity: 1; }
+                20%, 21.999%, 63%, 63.999%, 65%, 69.999% { opacity: 0.4; }
+            }
+
+            .flicker {
+                animation: flicker 5s linear infinite;
+            }
+
+            .scanlines {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 255, 0, 0.03));
+                z-index: 10000;
+                background-size: 100% 4px, 3px 100%;
+                pointer-events: none;
+                opacity: 0.2;
+            }
+
+            @keyframes shake {
+                0%, 100% { transform: translateX(0); }
+                25% { transform: translateX(-5px) rotate(-1deg); }
+                75% { transform: translateX(5px) rotate(1deg); }
+            }
+
+            .shake {
+                animation: shake 0.1s ease-in-out infinite;
+            }
+
+            img, video, iframe {
+                max-width: 100%;
+                height: auto;
+                border-radius: 1rem;
+            }
+            
+            @media (max-width: 768px) {
+                #target-container {
+                    padding: 1rem;
+                    padding-top: 2rem;
+                }
+                .font-mystere {
+                    letter-spacing: 0.1em;
+                }
+                .main-content-container {
+                    border-radius: 1.5rem;
+                }
+                .gadget-corner { width: 20px; height: 20px; border-width: 2px; }
+            }
+
+            .distort-hover {
+                transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            }
+            .distort-hover:hover {
+                transform: scale(1.05);
+                filter: brightness(1.1);
+            }
+
+            /* Modern Nav */
+            header {
+                backdrop-filter: blur(12px);
+                background: rgba(26, 26, 26, 0.8) !important;
+            }
+
+            /* Custom Scrollbar */
+            ::-webkit-scrollbar { width: 8px; }
+            ::-webkit-scrollbar-track { background: var(--primary-bg); }
+            ::-webkit-scrollbar-thumb { 
+                background: var(--mauve-mid); 
+                border-radius: 10px;
+                border: 2px solid var(--primary-bg);
+            }
+            ::-webkit-scrollbar-thumb:hover { background: var(--accent-color); }
+        </style>
+
+        {% block stylesheets %}{% endblock %}
+
+        <meta name="turbo-refresh-method" content="morph">
+        <meta name="turbo-refresh-scroll" content="preserve">
+
+        {{ importmap('app') }}
+        <script>
+            // Tesla Core Logic
+            (function() {
+                if (window.soundLogicInitialized) return;
+
+                window.handleTeslaBurger = () => {
+                    const burgerBtn = document.getElementById('burger-menu-btn');
+                    const overlay = document.getElementById('mobile-menu-overlay');
+                    const icon = document.getElementById('burger-icon');
+                    const mobileLinks = document.querySelectorAll('.mobile-link');
+
+                    if (!burgerBtn || !overlay || burgerBtn.hasAttribute('data-listener-added')) return;
+
+                    const toggleMenu = () => {
+                        const isOpen = overlay.classList.contains('translate-x-0');
+                        if (isOpen) {
+                            overlay.classList.remove('translate-x-0');
+                            overlay.classList.add('translate-x-full');
+                            icon.textContent = '☰';
+                            document.body.style.overflow = '';
+                        } else {
+                            overlay.classList.remove('translate-x-full');
+                            overlay.classList.add('translate-x-0');
+                            icon.textContent = '✕';
+                            document.body.style.overflow = 'hidden';
+                        }
+                    };
+
+                    burgerBtn.addEventListener('click', toggleMenu);
+                    mobileLinks.forEach(link => {
+                        link.addEventListener('click', () => {
+                            overlay.classList.remove('translate-x-0');
+                            overlay.classList.add('translate-x-full');
+                            icon.textContent = '☰';
+                            document.body.style.overflow = '';
+                        });
+                    });
+                    burgerBtn.setAttribute('data-listener-added', 'true');
+                };
+
+                const runAllTeslaLogic = () => {
+                    window.handleTeslaBurger();
+                    window.initTeslaSlime();
+                };
+
+                // Initial run
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', runAllTeslaLogic);
+                } else {
+                    runAllTeslaLogic();
+                }
+
+                // Turbo run
+                document.addEventListener('turbo:load', runAllTeslaLogic);
+
+                window.soundLogicInitialized = true;
+            })();
+
+            // Logic for Slime and Rain
+            window.initTeslaSlime = () => {
+                const rainCanvas = document.getElementById('slime-rain-canvas');
+                const edgeCanvas = document.getElementById('edge-slime-canvas');
+                if (!rainCanvas || !edgeCanvas || rainCanvas.hasAttribute('data-initialized')) return;
+                
+                rainCanvas.setAttribute('data-initialized', 'true');
+
+                const rCtx = rainCanvas.getContext('2d');
+                const eCtx = edgeCanvas.getContext('2d');
+                let width, height;
+
+                function resize() {
+                    width = rainCanvas.width = edgeCanvas.width = window.innerWidth;
+                    height = rainCanvas.height = edgeCanvas.height = window.innerHeight;
+                }
+                window.addEventListener('resize', resize);
+                resize();
+
+                class Particle {
+                    constructor(isEdge = false) {
+                        this.isEdge = isEdge;
+                        this.reset();
+                    }
+
+                    reset() {
+                        if (this.isEdge) {
+                            const onLeft = Math.random() > 0.5;
+                            this.x = onLeft ? Math.random() * 25 : width - Math.random() * 25;
+                            this.size = Math.random() * 3 + 1.5;
+                            this.speed = Math.random() * 0.4 + 0.1;
+                            this.gravity = 0.005;
+                            this.color = '#39ff14';
+                        } else {
+                            this.x = Math.random() * width;
+                            this.size = Math.random() * 30 + 5;
+                            this.speed = Math.random() * 1.5 + 0.5;
+                            this.gravity = 0.02;
+                            const r = Math.random();
+                            if (r > 0.5) this.color = '#39ff14';
+                            else if (r > 0.15) this.color = '#f1c40f';
+                            else this.color = '#8e44ad';
+                        }
+                        this.y = -Math.random() * 1000 - 100;
+                    }
+
+                    update() {
+                        this.speed += this.gravity;
+                        this.y += this.speed;
+                        if (this.y > height + 200) this.reset();
+                    }
+
+                    draw(ctx) {
+                        ctx.fillStyle = this.color;
+                        ctx.beginPath();
+                        if (this.isEdge) {
+                            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                            ctx.rect(this.x - this.size * 0.8, 0, this.size * 1.6, this.y);
+                        } else {
+                            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                            ctx.rect(this.x - this.size * 0.8, this.y - this.size * 2, this.size * 1.6, this.size * 2);
+                        }
+                        ctx.fill();
+                        ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+                        ctx.beginPath();
+                        ctx.arc(this.x - this.size/3, this.y - this.size/3, this.size/4, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+
+                const rainParticles = [];
+                const edgeParticles = [];
+                for (let i = 0; i < 40; i++) rainParticles.push(new Particle(false));
+                for (let i = 0; i < 70; i++) edgeParticles.push(new Particle(true));
+
+                function animate() {
+                    rCtx.clearRect(0, 0, width, height);
+                    eCtx.clearRect(0, 0, width, height);
+                    rainParticles.forEach(p => { p.update(); p.draw(rCtx); });
+                    edgeParticles.forEach(p => { p.update(); p.draw(eCtx); });
+                    requestAnimationFrame(animate);
+                }
+                animate();
+            };
+            document.addEventListener('turbo:load', window.initTeslaSlime);
+        </script>
+    </head>
+    <body class="font-sans text-white antialiased min-h-screen overflow-x-hidden">
+        <div class="scanlines"></div>
+
+        <!-- Google Tag Manager (noscript) -->
+        <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-NHKVMFJR"
+        height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+        <!-- End Google Tag Manager (noscript) -->
+
+        <svg xmlns="http://www.w3.org/2000/svg" version="1.1" class="hidden">
+          <defs>
+            <filter id="gooey-slime">
+              <feGaussianBlur in="SourceGraphic" stdDeviation="10" result="blur" />
+              <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 25 -12" result="goo" />
+              <feComposite in="SourceGraphic" in2="goo" operator="atop"/>
+            </filter>
+          </defs>
+        </svg>
+
+        <canvas id="slime-rain-canvas" class="gooey-filter"></canvas>
+        <canvas id="edge-slime-canvas" class="gooey-filter"></canvas>
+
+        <header class="border-b-4 border-accent sticky top-0 bg-primary z-[200] py-5 shadow-2xl">
+            <div class="max-w-6xl mx-auto px-4 md:px-6">
+                <div class="flex flex-row justify-between items-center gap-4">
+                    <a href="{{ path('blog_index') }}" class="flex flex-col items-center md:items-start group text-center md:text-left glitch-hover">
+                        <span class="font-mystere text-3xl md:text-5xl tracking-widest text-accent group-hover:scale-105 transition-transform uppercase whitespace-nowrap drop-shadow-[0_0_15px_rgba(57,255,20,0.6)]">
+                            IMM<span class="inline-block animate-pulse -mx-1">🧅</span>NDE PLUS
+                        </span>
+                        <span class="hidden md:block text-[10px] font-bold tracking-[0.2em] uppercase text-mauve-light mt-1 text-center md:text-left">Enquêtes paranormales et révélations de l'ombre.</span>
+                    </a>
+                    
+                    {# Mobile Burger Button #}
+                    <button id="burger-menu-btn" class="md:hidden text-accent text-3xl focus:outline-none z-[300]">
+                        <span id="burger-icon">☰</span>
+                    </button>
+
+                    <nav class="hidden md:flex items-center gap-6 font-black uppercase text-xs tracking-widest text-white">
+                        <a href="{{ path('blog_films') }}" class="hover:text-accent transition-all hover:scale-110 distort-hover">Les Films</a>
+                        <a href="{{ path('blog_articles') }}" class="hover:text-accent transition-all hover:scale-110 distort-hover">Les Articles</a>
+                        <a href="{{ path('blog_games') }}" class="text-accent hover:text-white transition-all hover:scale-110 distort-hover">Jeux</a>
+                        <a href="{{ path('app_contact') }}" class="hover:text-accent transition-colors uppercase italic text-[10px] font-black border-2 border-accent/30 px-3 py-1 rounded-full shadow-[0_0_10px_rgba(57,255,20,0.2)] distort-hover">Contact</a>
+                        
+                        {% if is_granted('ROLE_ADMIN') %}
+                            <div class="flex items-center gap-4 bg-mauve-dark/30 px-4 py-2 rounded-full border border-mauve-light/20">
+                                <span class="text-[10px] text-mauve-light lowercase italic">Connecté : <b class="text-accent not-italic uppercase">{{ app.user.pseudo ?: app.user.email }}</b></span>
+                                <a href="{{ path('admin') }}" class="bg-accent text-primary px-3 py-1 rounded-full font-black text-[9px] hover:scale-105 transition-all shadow-[0_0_15px_rgba(57,255,20,0.4)] uppercase distort-hover">Admin</a>
+                            </div>
+                        {% else %}
+                            <a href="{{ path('admin') }}" class="bg-accent text-primary px-4 py-2 rounded font-black hover:scale-110 transition-all shadow-[0_0_15px_rgba(57,255,20,0.4)] uppercase text-center distort-hover">Espace Rédaction</a>
+                        {% endif %}
+                    </nav>
+                </div>
+            </div>
+        </header>
+
+        {# Mobile Menu Overlay #}
+        <div id="mobile-menu-overlay" class="fixed inset-0 bg-black z-[250] flex flex-col items-center justify-center translate-x-full transition-transform duration-500 md:hidden">
+            <nav class="flex flex-col items-center gap-10 font-mystere text-4xl tracking-[0.2em] text-white uppercase italic">
+                <a href="{{ path('blog_films') }}" class="hover:text-accent transition-all hover:scale-110 mobile-link">Les Films</a>
+                <a href="{{ path('blog_articles') }}" class="hover:text-accent transition-all hover:scale-110 mobile-link">Les Articles</a>
+                <a href="{{ path('blog_games') }}" class="text-accent hover:text-white transition-all hover:scale-110 mobile-link">Jeux</a>
+                <a href="{{ path('app_contact') }}" class="hover:text-accent transition-all hover:scale-110 mobile-link text-2xl">Contact</a>
+                <a href="{{ path('admin') }}" class="bg-accent text-primary px-8 py-4 rounded font-black text-xl hover:scale-110 transition-all shadow-[0_0_15px_rgba(57,255,20,0.4)] mobile-link">Espace Rédaction</a>
+            </nav>
+        </div>
+
+        <main class="py-16 relative z-20">
+            <div id="target-container" class="max-w-5xl mx-auto px-4 md:px-6 main-content-container py-16 min-h-[70vh]">
+                <div class="gadget-corner corner-tl"></div>
+                <div class="gadget-corner corner-tr"></div>
+                <div class="gadget-corner corner-bl"></div>
+                <div class="gadget-corner corner-br"></div>
+                {% block body %}{% endblock %}
+            </div>
+        </main>
+
+        <footer class="bg-primary border-t-8 border-accent pt-20 pb-10 relative z-[100]">
+            <div class="max-w-6xl mx-auto px-4 md:px-6 text-white">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-16 mb-16 text-center md:text-left">
+                    <div>
+                        <span class="font-mystere text-4xl text-accent mb-6 block uppercase tracking-widest drop-shadow-[0_0_10px_rgba(57,255,20,0.4)]">IMM<span class="-mx-1">🧅</span>NDE PLUS</span>
+                        <p class="text-mauve-light text-sm leading-relaxed italic font-medium">
+                            "La vérité, même épluchée jusqu'au trognon."
+                        </p>
+                    </div>
+                    <div>
+                        <h3 class="font-black text-accent uppercase tracking-[0.2em] mb-6 italic text-xl text-shadow-none text-white">Accès Rapide</h3>
+                        <ul class="space-y-3 text-sm text-gray-400 font-bold uppercase tracking-widest">
+                            <li><a href="{{ path('blog_films') }}" class="hover:text-white transition-colors underline decoration-mauve-dark">Les Films</a></li>
+                            <li><a href="{{ path('blog_articles') }}" class="hover:text-white transition-colors underline decoration-mauve-dark">Les Articles</a></li>
+                            <li><a href="{{ path('blog_games') }}" class="hover:text-white transition-colors underline decoration-mauve-dark">Jeux</a></li>
+                            <li><a href="{{ path('app_contact') }}" class="hover:text-white transition-colors">Contact</a></li>
+                            <li><a href="{{ path('app_legal') }}" class="hover:text-white transition-colors text-xs opacity-60">Mentions Légales</a></li>
+                            <li><a href="{{ path('sitemap') }}" class="hover:text-white transition-colors text-xs opacity-60">Plan du site (SEO)</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="font-black text-accent uppercase tracking-[0.2em] mb-6 italic text-xl text-shadow-none text-white">Contact Secret</h3>
+                        <p class="text-sm text-gray-400 font-bold uppercase tracking-widest text-shadow-none">
+                            Dénonciations : <br>
+                            <a href="mailto:contact@immondeplus.fr" class="text-white font-black hover:text-accent transition-colors">contact@immondeplus.fr</a>
+                        </p>
+                    </div>
+                </div>
+                <div class="border-t border-gray-800 pt-10 text-center text-[11px] text-gray-500 tracking-[0.4em] uppercase font-black">
+                    &copy; {{ "now"|date("Y") }} IMM🧅NDE PLUS — LA PELURE DE L'OIGNON.
+                </div>
+            </div>
+        </footer>
+
+        {# ============================================================= #}
+        {#  MOTEUR DE MISÈRE — rend Imm🧅nde Plus encore plus immonde     #}
+        {# ============================================================= #}
+        <div id="misere-hud" class="fixed bottom-4 left-4 z-[9999] pointer-events-none select-none font-mystere hidden md:block">
+            <div class="bg-black/70 backdrop-blur-sm border border-accent/40 rounded-xl px-4 py-2 shadow-[0_0_25px_rgba(57,255,20,0.25)]">
+                <div class="text-[8px] tracking-[0.3em] text-mauve-light uppercase font-sans font-black">Indice de Misère</div>
+                <div class="flex items-baseline gap-1">
+                    <span id="misere-count" class="text-accent text-2xl tracking-widest drop-shadow-[0_0_10px_rgba(57,255,20,0.6)]">0</span>
+                    <span class="text-accent/40 text-sm">‰</span>
+                </div>
+                <div id="misere-label" class="text-[8px] tracking-[0.25em] text-gray-400 uppercase font-sans font-bold flicker">Contamination en cours…</div>
+            </div>
+        </div>
+
+        <div id="onion-tears" class="fixed inset-0 z-[9998] pointer-events-none opacity-0 transition-opacity duration-300"
+             style="background: radial-gradient(circle at center, transparent 35%, rgba(57,255,20,0.15) 80%, rgba(68,51,122,0.5) 100%); mix-blend-mode: screen;"></div>
+
+        <div id="slime-toast"
+             class="fixed top-24 right-4 z-[9999] max-w-[260px] translate-x-[120%] transition-transform duration-500 ease-out pointer-events-none">
+            <div class="bg-black/85 backdrop-blur border-l-4 border-accent rounded-r-xl px-4 py-3 shadow-[0_0_30px_rgba(57,255,20,0.3)]">
+                <div class="text-[8px] tracking-[0.3em] text-accent uppercase font-black mb-1">🟢 BAVE ÉCRASÉE</div>
+                <div id="slime-msg" class="text-[11px] text-mauve-light font-bold uppercase tracking-wider leading-snug"></div>
+            </div>
+        </div>
+
+        <style>
+            @keyframes misere-fly {
+                0%   { transform: translate(0,0) rotate(0deg); }
+                25%  { transform: translate(40px,-30px) rotate(20deg); }
+                50%  { transform: translate(-25px,20px) rotate(-15deg); }
+                75%  { transform: translate(30px,35px) rotate(10deg); }
+                100% { transform: translate(0,0) rotate(0deg); }
+            }
+            .misere-fly {
+                position: fixed;
+                z-index: 9997;
+                pointer-events: none;
+                font-size: 18px;
+                opacity: 0.85;
+                will-change: transform;
+                filter: drop-shadow(0 0 3px rgba(0,0,0,0.6));
+            }
+            @keyframes slime-drip {
+                0%   { transform: translateY(0) scaleY(1); opacity: 0.9; }
+                70%  { opacity: 0.9; }
+                100% { transform: translateY(45px) scaleY(1.8); opacity: 0; }
+            }
+            .slime-drip {
+                position: fixed;
+                z-index: 9996;
+                pointer-events: none;
+                width: 7px; height: 7px;
+                border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+                background: radial-gradient(circle at 30% 30%, #7dff5c, #39ff14 60%, #2bbf0e);
+                box-shadow: 0 0 8px rgba(57,255,20,0.7);
+                animation: slime-drip 1.1s ease-in forwards;
+            }
+            @keyframes global-glitch {
+                0%,100% { filter: none; transform: none; }
+                20% { filter: hue-rotate(40deg) saturate(2); transform: translate(-2px,1px) skewX(0.6deg); }
+                40% { filter: invert(0.04) hue-rotate(-30deg); transform: translate(3px,-2px); }
+                60% { filter: contrast(1.3); transform: translate(-1px,2px) skewY(0.4deg); }
+                80% { filter: hue-rotate(20deg); transform: translate(2px,0); }
+            }
+            body.misere-glitch { animation: global-glitch 0.45s steps(2) 2; }
+
+            /* ---- Slime fugitif ---- */
+            #slime-fugitif {
+                position: fixed;
+                z-index: 9995;
+                width: 64px; height: 64px;
+                pointer-events: none;
+                will-change: transform;
+                filter: drop-shadow(0 6px 6px rgba(0,0,0,0.5));
+                transition: opacity 0.25s;
+            }
+            #slime-fugitif.attrape { animation: slime-squish 0.35s ease-out; }
+            @keyframes slime-squish {
+                0%   { transform: scale(1,1); }
+                40%  { transform: scale(1.5,0.45); }
+                70%  { transform: scale(0.7,1.3); }
+                100% { transform: scale(0,0); opacity: 0; }
+            }
+            @keyframes splat-fly {
+                0%   { transform: translate(0,0) scale(1); opacity: 1; }
+                100% { transform: translate(var(--dx), var(--dy)) scale(0.2); opacity: 0; }
+            }
+            .splat-blob {
+                position: fixed;
+                z-index: 9994;
+                pointer-events: none;
+                border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+                background: radial-gradient(circle at 30% 30%, #9dff7a, #39ff14 60%, #1f8f08);
+                box-shadow: 0 0 10px rgba(57,255,20,0.7);
+                animation: splat-fly 0.9s cubic-bezier(0.2,0.7,0.3,1) forwards;
+            }
+            @media (pointer: fine) and (min-width: 768px) {
+                body, body.font-sans { cursor: var(--slime-cursor), auto !important; }
+                a, button, [role="button"], input, textarea, select, label {
+                    cursor: var(--slime-cursor), pointer !important;
+                }
+            }
+        </style>
+
+        <script>
+            (function () {
+                if (window.misereEngineInitialized) return;
+                window.misereEngineInitialized = true;
+
+                const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+                /* ---- Indice de Misère : ne fait que grimper ---- */
+                const counterEl = document.getElementById('misere-count');
+                const labelEl   = document.getElementById('misere-label');
+                const PALIERS = [
+                    [0,    'Contamination en cours…'],
+                    [120,  'Odeur détectée'],
+                    [300,  'Niveau préoccupant'],
+                    [600,  'Trognon exposé'],
+                    [999,  'IMMONDITUDE MAXIMALE'],
+                ];
+                let misere = parseInt(sessionStorage.getItem('misere') || '0', 10);
+                function renderMisere() {
+                    if (!counterEl) return;
+                    counterEl.textContent = misere;
+                    let label = PALIERS[0][1];
+                    for (const [seuil, txt] of PALIERS) if (misere >= seuil) label = txt;
+                    if (labelEl) labelEl.textContent = label;
+                }
+                function bumpMisere(n) {
+                    misere = Math.min(999, misere + n);
+                    sessionStorage.setItem('misere', String(misere));
+                    renderMisere();
+                }
+                renderMisere();
+                if (!reduce) setInterval(() => bumpMisere(1), 1800);
+
+                /* ---- Goutte de bave qui suit le curseur ---- */
+                let lastDrip = 0;
+                if (!reduce) document.addEventListener('mousemove', (e) => {
+                    const now = e.timeStamp;
+                    if (now - lastDrip < 90) return;
+                    lastDrip = now;
+                    const d = document.createElement('div');
+                    d.className = 'slime-drip';
+                    d.style.left = (e.clientX - 3) + 'px';
+                    d.style.top  = (e.clientY + 4) + 'px';
+                    document.body.appendChild(d);
+                    setTimeout(() => d.remove(), 1100);
+                });
+
+                /* ---- Essaim de mouches ---- */
+                function spawnFlies(count) {
+                    for (let i = 0; i < count; i++) {
+                        const f = document.createElement('div');
+                        f.className = 'misere-fly';
+                        f.textContent = Math.random() > 0.5 ? '🪰' : '🦟';
+                        f.style.left = Math.random() * 90 + 'vw';
+                        f.style.top  = Math.random() * 80 + 'vh';
+                        f.style.animation = `misere-fly ${4 + Math.random() * 5}s ease-in-out ${Math.random() * 3}s infinite`;
+                        f.style.fontSize = (12 + Math.random() * 14) + 'px';
+                        document.body.appendChild(f);
+                    }
+                }
+                if (!reduce) spawnFlies(window.innerWidth < 768 ? 3 : 7);
+
+                /* ---- Toast réutilisé pour le cri du slime ---- */
+                const toast = document.getElementById('slime-toast');
+                const toastMsg = document.getElementById('slime-msg');
+
+                /* ---- Larmes d'oignon : glitch + vignette occasionnels ---- */
+                const tears = document.getElementById('onion-tears');
+                function onionTear() {
+                    if (reduce) return;
+                    document.body.classList.add('misere-glitch');
+                    if (tears) tears.style.opacity = '1';
+                    bumpMisere(8);
+                    setTimeout(() => {
+                        document.body.classList.remove('misere-glitch');
+                        if (tears) tears.style.opacity = '0';
+                    }, 900);
+                }
+                if (!reduce) setInterval(onionTear, 23000);
+
+                /* ---- La bave : mascotte SVG réutilisable ---- */
+                function slimeSVG(size, sad) {
+                    const mouth = sad
+                        ? "<path d='M36 70 Q50 60 64 70' stroke='%230a3d02' stroke-width='3.5' fill='none' stroke-linecap='round'/>"
+                        : "<path d='M38 64 Q50 76 62 64' stroke='%230a3d02' stroke-width='3.5' fill='none' stroke-linecap='round'/>";
+                    return "<svg xmlns='http://www.w3.org/2000/svg' width='" + size + "' height='" + size + "' viewBox='0 0 100 100'>"
+                        + "<defs><radialGradient id='sg' cx='35%25' cy='28%25'>"
+                        + "<stop offset='0%25' stop-color='%239dff7a'/><stop offset='55%25' stop-color='%2339ff14'/><stop offset='100%25' stop-color='%231f8f08'/>"
+                        + "</radialGradient></defs>"
+                        + "<path d='M50 8 C76 8 91 28 91 51 C91 69 96 78 92 88 C89 95 84 88 79 90 C74 92 73 84 67 86 C61 88 59 97 51 96 C45 95 45 86 39 87 C33 88 31 97 25 92 C19 87 24 79 20 75 C12 67 9 59 9 50 C9 27 24 8 50 8 Z' fill='url(%23sg)'/>"
+                        + "<ellipse cx='37' cy='30' rx='11' ry='7' fill='%23ffffff' opacity='0.45'/>"
+                        + "<circle cx='40' cy='46' r='8.5' fill='%23fff'/><circle cx='62' cy='46' r='8.5' fill='%23fff'/>"
+                        + "<circle cx='41' cy='49' r='4.2' fill='%23000'/><circle cx='63' cy='49' r='4.2' fill='%23000'/>"
+                        + (sad ? "<path d='M37 58 Q40 67 36 72' stroke='%23a8e6ff' stroke-width='2.5' fill='none' opacity='0.8'/>" : "")
+                        + mouth + "</svg>";
+                }
+
+                /* Curseur slime (desktop pointeur fin uniquement) */
+                const fine = window.matchMedia('(pointer: fine)').matches && window.innerWidth >= 768;
+                if (fine) {
+                    const curUri = "data:image/svg+xml," + slimeSVG(36, true);
+                    document.documentElement.style.setProperty('--slime-cursor', "url(\"" + curUri + "\") 18 18");
+                }
+
+                /* Slime fugitif et misérable */
+                if (fine && !reduce) {
+                    const sprite = document.createElement('img');
+                    sprite.id = 'slime-fugitif';
+                    sprite.alt = 'bave fugitive';
+                    sprite.src = "data:image/svg+xml," + slimeSVG(64, true);
+                    document.body.appendChild(sprite);
+
+                    const mouse = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+                    document.addEventListener('mousemove', (e) => { mouse.x = e.clientX; mouse.y = e.clientY; });
+
+                    const S = { x: Math.random() * window.innerWidth, y: Math.random() * window.innerHeight,
+                                vx: 0, vy: 0, tx: 0, ty: 0, t: 0, caught: false };
+                    function pickTarget() {
+                        S.tx = 40 + Math.random() * (window.innerWidth - 80);
+                        S.ty = 40 + Math.random() * (window.innerHeight - 80);
+                    }
+                    pickTarget();
+                    setInterval(() => { if (!S.caught) pickTarget(); }, 2600);
+
+                    const CRIS = [
+                        "SPLOURTCH !", "Tu m'as eu… encore.", "Je suis si misérable 😭",
+                        "Laisse-moi suinter en paix !", "BLEUARGH.", "Pourquoi moi…",
+                        "*bruit de pelure mouillée*", "Aïe, ma gélatine !",
+                    ];
+                    let dripT = 0, crisIdx = 0;
+
+                    function splat(x, y) {
+                        for (let i = 0; i < 16; i++) {
+                            const b = document.createElement('div');
+                            b.className = 'splat-blob';
+                            const sz = 6 + Math.random() * 16;
+                            b.style.width = sz + 'px'; b.style.height = sz + 'px';
+                            b.style.left = (x - sz / 2) + 'px';
+                            b.style.top  = (y - sz / 2) + 'px';
+                            const ang = Math.random() * Math.PI * 2, dist = 50 + Math.random() * 140;
+                            b.style.setProperty('--dx', Math.cos(ang) * dist + 'px');
+                            b.style.setProperty('--dy', (Math.sin(ang) * dist + 60) + 'px');
+                            document.body.appendChild(b);
+                            setTimeout(() => b.remove(), 950);
+                        }
+                    }
+
+                    function catchSlime() {
+                        if (S.caught) return;
+                        S.caught = true;
+                        sprite.classList.add('attrape');
+                        splat(S.x + 32, S.y + 32);
+                        bumpMisere(50);
+                        if (toast && toastMsg) {
+                            toastMsg.textContent = CRIS[crisIdx++ % CRIS.length];
+                            toast.classList.remove('translate-x-[120%]');
+                            setTimeout(() => toast.classList.add('translate-x-[120%]'), 3000);
+                        }
+                        document.body.classList.add('misere-glitch');
+                        setTimeout(() => document.body.classList.remove('misere-glitch'), 450);
+                        setTimeout(() => {
+                            sprite.classList.remove('attrape');
+                            S.x = Math.random() > 0.5 ? -60 : window.innerWidth + 60;
+                            S.y = Math.random() * window.innerHeight;
+                            S.vx = S.vy = 0;
+                            pickTarget();
+                            sprite.style.opacity = '1';
+                            S.caught = false;
+                        }, 1400);
+                    }
+
+                    function tick(now) {
+                        if (!S.caught) {
+                            S.t += 0.05;
+                            const dxm = (S.x + 32) - mouse.x, dym = (S.y + 32) - mouse.y;
+                            const distM = Math.hypot(dxm, dym);
+
+                            if (distM < 95) { catchSlime(); }
+                            else {
+                                let ax, ay;
+                                if (distM < 230) {            // panique : fuit le curseur
+                                    ax = (dxm / distM) * 0.9;
+                                    ay = (dym / distM) * 0.9;
+                                } else {                       // errance molle vers une cible
+                                    const dxt = S.tx - S.x, dyt = S.ty - S.y;
+                                    const dt = Math.hypot(dxt, dyt) || 1;
+                                    ax = (dxt / dt) * 0.12;
+                                    ay = (dyt / dt) * 0.12;
+                                }
+                                S.vx = S.vx * 0.92 + ax;
+                                S.vy = S.vy * 0.92 + ay + 0.03;           // un peu de gravité = ça s'affaisse
+                                S.vx += Math.sin(S.t * 1.7) * 0.10;       // dandinement misérable
+                                S.x += S.vx;
+                                S.y += S.vy;
+
+                                // rebonds mous sur les bords
+                                if (S.x < 0) { S.x = 0; S.vx = Math.abs(S.vx) * 0.6; }
+                                if (S.x > window.innerWidth - 64) { S.x = window.innerWidth - 64; S.vx = -Math.abs(S.vx) * 0.6; }
+                                if (S.y < 0) { S.y = 0; S.vy = Math.abs(S.vy) * 0.6; }
+                                if (S.y > window.innerHeight - 64) { S.y = window.innerHeight - 64; S.vy = -Math.abs(S.vy) * 0.4; }
+
+                                const tilt = Math.max(-18, Math.min(18, S.vx * 4));
+                                sprite.style.transform = "translate(" + S.x + "px," + S.y + "px) rotate(" + tilt + "deg) scaleY(" + (1 - Math.min(0.2, Math.abs(S.vy) * 0.05)) + ")";
+
+                                // laisse une traînée de bave
+                                if (now - dripT > 130) {
+                                    dripT = now;
+                                    const d = document.createElement('div');
+                                    d.className = 'slime-drip';
+                                    d.style.left = (S.x + 28) + 'px';
+                                    d.style.top  = (S.y + 50) + 'px';
+                                    document.body.appendChild(d);
+                                    setTimeout(() => d.remove(), 1100);
+                                }
+                            }
+                        }
+                        requestAnimationFrame(tick);
+                    }
+                    requestAnimationFrame(tick);
+                }
+            })();
+        </script>
+    </body>
+</html>

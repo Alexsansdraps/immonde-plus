@@ -1,0 +1,19 @@
+fos_ck_editor:
+    default_config: main_config
+    configs:
+        main_config:
+            toolbar: full
+            uiColor: "#1a1a1a"
+            # Prend toute la largeur disponible
+            width: "100%"
+            # Désactive les notifications d'avertissement de sécurité/LTS
+            removePlugins: "notification,scayt"
+            # Version GPL pour éviter tout message de licence
+            licenseKey: 'GPL'
+            # Configuration pour le Dark Mode visuel
+            contentsCss: ['/bundles/fosckeditor/contents.css']
+            # On force quelques styles sombres pour la zone de saisie
+            bodyClass: 'document-dark'
+            # Ajustements CSS personnalisés pour l'éditeur
+            extraConfig: |
+                CKEDITOR.addCss('.cke_editable { background-color: #111 !important; color: #eee !important; padding: 20px !important; }');
