@@ -16,33 +16,31 @@ Application web développée avec **Symfony 7.4** (PHP 8.2+) : blog, pages de co
 - [Composer](https://getcomposer.org/)
 - *(Optionnel)* la [Symfony CLI](https://symfony.com/download)
 
-## Installation
+## 🚀 Lancer le projet
+
+Dans un terminal, **à la racine du projet**, exécuter les commandes dans l'ordre :
 
 ```bash
-# 1. Installer les dépendances
+# 1. Installer les dépendances PHP
 composer install
 
-# 2. Configuration locale (ce fichier n'est PAS versionné)
-#    Copier .env vers .env.local et y renseigner vos valeurs (DATABASE_URL, APP_SECRET…)
-cp .env .env.local
-
-# 3. Base de données + migrations
+# 2. Créer la base de données (SQLite en local) + appliquer les migrations
 php bin/console doctrine:database:create
 php bin/console doctrine:migrations:migrate
 
-# (Optionnel) Données de démonstration
+# 3. (Optionnel) Charger des données de démonstration
 php bin/console doctrine:fixtures:load
-```
 
-## Lancer le projet
-
-```bash
+# 4. Démarrer le serveur web
 symfony serve
-# ou, sans la Symfony CLI :
-php -S localhost:8000 -t public/
 ```
 
-Le site est alors accessible sur http://localhost:8000.
+➡️ Le site est ensuite accessible sur **http://localhost:8000**
+
+Pour arrêter le serveur : `Ctrl + C` (ou `symfony server:stop`).
+
+> **Sans la Symfony CLI**, remplacer l'étape 4 par : `php -S localhost:8000 -t public/`
+> **Configuration locale** (base de prod, clés…) : copier `.env` vers `.env.local` (non versionné) et y mettre vos valeurs.
 
 ## Configuration & secrets
 
