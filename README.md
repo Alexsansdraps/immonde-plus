@@ -1,6 +1,6 @@
 # Immonde-plus
 
-Application web développée avec **Symfony 7.4** (PHP 8.2+) : blog, pages de contenu, formulaire de contact et back-office d'administration.
+Application web développée avec **Symfony 7.4** (PHP 8.2+) : blog, pages de contenu, formulaire de contact et back-office d'administration
 
 ## Stack technique
 
