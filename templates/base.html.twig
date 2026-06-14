@@ -73,35 +73,118 @@
         <style>
             :root {
                 --accent-color: #39ff14;
-                --primary-bg: rgba(10, 10, 10, 0.96);
-                --mauve-deep: #44337a;
+                --primary-bg: #14121c;
+                --mauve-deep: #2b2440;
                 --mauve-mid: #805ad5;
                 --mauve-light: #b794f4;
             }
 
+            /* Fond IMMONDE : marécage organique vert/violet qui ondule lentement */
             body {
-                background: linear-gradient(135deg, var(--mauve-deep) 0%, var(--mauve-mid) 50%, var(--mauve-light) 100%);
+                background-color: #0a1208;
+                background-image:
+                    radial-gradient(ellipse 60% 50% at 15% 10%, rgba(57, 255, 20, 0.22), transparent 55%),
+                    radial-gradient(ellipse 50% 60% at 85% 25%, rgba(128, 90, 213, 0.28), transparent 55%),
+                    radial-gradient(ellipse 70% 50% at 50% 95%, rgba(31, 143, 8, 0.30), transparent 60%),
+                    radial-gradient(ellipse 40% 40% at 70% 70%, rgba(68, 51, 122, 0.25), transparent 55%);
                 background-attachment: fixed;
-                cursor: crosshair;
+                background-size: 200% 200%;
+                animation: immonde-ooze 28s ease-in-out infinite;
+            }
+            @keyframes immonde-ooze {
+                0%, 100% { background-position: 0% 0%, 100% 0%, 50% 100%, 70% 70%; }
+                50%      { background-position: 10% 20%, 80% 30%, 40% 80%, 60% 50%; }
+            }
+
+            /* ===================================================== */
+            /*  FOND IMMONDE — coulures de bave verte qui dégoulinent */
+            /*  Placé DERRIÈRE le contenu (z-index 0) : le bloc       */
+            /*  central reste opaque et lisible par-dessus.          */
+            /* ===================================================== */
+            #slime-bg {
+                position: fixed;
+                inset: 0;
+                z-index: 0;
+                pointer-events: none;
+                overflow: hidden;
+                opacity: 0.95;
+            }
+            /* Une coulure = une barre verticale accrochée en haut, qui s'allonge,
+               coiffée d'une goutte renflée au bout. */
+            .slime-drip-bg {
+                position: absolute;
+                top: -40px;
+                width: 10px;
+                border-bottom-left-radius: 50% 18px;
+                border-bottom-right-radius: 50% 18px;
+                background: linear-gradient(180deg, #2bbf0e 0%, #39ff14 55%, #7dff5c 100%);
+                box-shadow: 0 0 14px rgba(57, 255, 20, 0.45);
+                transform-origin: top center;
+                animation: bg-drip-grow var(--dur, 7s) ease-in-out var(--delay, 0s) infinite;
+            }
+            /* La goutte au bout de la coulure */
+            .slime-drip-bg::after {
+                content: "";
+                position: absolute;
+                bottom: -9px;
+                left: 50%;
+                width: 18px;
+                height: 22px;
+                transform: translateX(-50%);
+                border-radius: 50% 50% 50% 50% / 55% 55% 45% 45%;
+                background: radial-gradient(circle at 35% 30%, #9dff7a, #39ff14 60%, #1f8f08);
+                box-shadow: 0 0 12px rgba(57, 255, 20, 0.5);
+            }
+            @keyframes bg-drip-grow {
+                0%       { height: 40px;  opacity: 0; }
+                12%      { opacity: 1; }
+                55%      { height: var(--len, 160px); }
+                88%      { height: var(--len, 160px); opacity: 1; }
+                100%     { height: calc(var(--len, 160px) + 10px); opacity: 0; }
+            }
+
+            /* Gouttes détachées qui tombent jusqu'en bas */
+            .slime-fall-bg {
+                position: absolute;
+                top: -30px;
+                width: 14px;
+                height: 18px;
+                border-radius: 50% 50% 50% 50% / 55% 55% 45% 45%;
+                background: radial-gradient(circle at 35% 30%, #9dff7a, #39ff14 60%, #1f8f08);
+                box-shadow: 0 0 10px rgba(57, 255, 20, 0.5);
+                animation: bg-fall var(--dur, 9s) cubic-bezier(0.5, 0, 0.9, 1) var(--delay, 0s) infinite;
+            }
+            @keyframes bg-fall {
+                0%   { transform: translateY(0) scaleY(0.8); opacity: 0; }
+                8%   { opacity: 0.9; }
+                90%  { opacity: 0.9; }
+                100% { transform: translateY(105vh) scaleY(1.5); opacity: 0; }
+            }
+
+            /* Sur petit écran : un peu moins dense pour rester lisible */
+            @media (max-width: 768px) {
+                #slime-bg { opacity: 0.7; }
             }
 
             .main-content-container {
-                background: var(--primary-bg);
+                background: linear-gradient(180deg, rgba(28, 24, 40, 0.92) 0%, rgba(18, 16, 26, 0.96) 100%);
                 position: relative;
-                box-shadow: 
-                    0 0 100px rgba(0,0,0,0.9), 
-                    0 0 30px rgba(57, 255, 20, 0.1),
-                    inset 0 0 20px rgba(57, 255, 20, 0.05);
-                backdrop-filter: blur(16px);
+                box-shadow: 0 12px 50px rgba(0, 0, 0, 0.45);
                 z-index: 20;
-                border: 2px solid rgba(57, 255, 20, 0.3);
-                border-radius: 3rem;
-                animation: neon-pulse 4s infinite ease-in-out;
+                border: 1px solid rgba(255, 255, 255, 0.06);
+                border-radius: 1.5rem;
             }
-
-            @keyframes neon-pulse {
-                0%, 100% { border-color: rgba(57, 255, 20, 0.3); box-shadow: 0 0 40px rgba(57, 255, 20, 0.1); }
-                50% { border-color: rgba(57, 255, 20, 0.6); box-shadow: 0 0 60px rgba(57, 255, 20, 0.3); }
+            /* Fin liseré vert en haut du conteneur — touche d'identité, discrète */
+            .main-content-container::before {
+                content: "";
+                position: absolute;
+                top: 0;
+                left: 10%;
+                right: 10%;
+                height: 2px;
+                background: linear-gradient(90deg, transparent, var(--accent-color), transparent);
+                opacity: 0.5;
+                border-radius: 2px;
             }
 
             @keyframes scan-slow {
@@ -113,77 +196,21 @@
                 animation: scan-slow 8s linear infinite;
             }
 
-            /* Decorative Corner Brackets */
-            .gadget-corner {
-                position: absolute;
-                width: 40px;
-                height: 40px;
-                border: 3px solid var(--accent-color);
-                z-index: 30;
-                pointer-events: none;
-                opacity: 0.6;
+            /* glitch-hover : neutralisé — simple mise en avant, plus de tremblement infini */
+            .glitch-hover {
+                transition: text-shadow 0.3s ease, color 0.3s ease;
             }
-            .corner-tl { top: 20px; left: 20px; border-right: none; border-bottom: none; border-top-left-radius: 1rem; }
-            .corner-tr { top: 20px; right: 20px; border-left: none; border-bottom: none; border-top-right-radius: 1rem; }
-            .corner-bl { bottom: 20px; left: 20px; border-right: none; border-top: none; border-bottom-left-radius: 1rem; }
-            .corner-br { bottom: 20px; right: 20px; border-left: none; border-top: none; border-bottom-right-radius: 1rem; }
-
-            #slime-rain-canvas, #edge-slime-canvas {
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                pointer-events: none;
-                z-index: 5;
-            }
-
-            .gooey-filter {
-                filter: url("#gooey-slime");
-            }
-
-            @keyframes glitch {
-                0% { transform: translate(0); text-shadow: -2px 0 var(--accent-color), 2px 0 var(--mauve-mid); }
-                25% { transform: translate(-1px, 1px); }
-                50% { transform: translate(-1px, -1px); text-shadow: 2px 0 var(--accent-color), -2px 0 var(--mauve-mid); }
-                75% { transform: translate(1px, 1px); }
-                100% { transform: translate(0); }
-            }
-
             .glitch-hover:hover {
-                animation: glitch 0.4s infinite linear;
+                text-shadow: 0 0 12px rgba(57, 255, 20, 0.5);
             }
 
             @keyframes spooky-float {
-                0%, 100% { transform: translateY(0) rotate(0deg); }
-                25% { transform: translateY(-10px) rotate(1deg); }
-                75% { transform: translateY(10px) rotate(-1deg); }
+                0%, 100% { transform: translateY(0); }
+                50% { transform: translateY(-6px); }
             }
 
             .spooky-float {
-                animation: spooky-float 4s ease-in-out infinite;
-            }
-
-            @keyframes flicker {
-                0%, 19.999%, 22%, 62.999%, 64%, 64.999%, 70%, 100% { opacity: 1; }
-                20%, 21.999%, 63%, 63.999%, 65%, 69.999% { opacity: 0.4; }
-            }
-
-            .flicker {
-                animation: flicker 5s linear infinite;
-            }
-
-            .scanlines {
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 255, 0, 0.03));
-                z-index: 10000;
-                background-size: 100% 4px, 3px 100%;
-                pointer-events: none;
-                opacity: 0.2;
+                animation: spooky-float 5s ease-in-out infinite;
             }
 
             @keyframes shake {
@@ -201,7 +228,7 @@
                 height: auto;
                 border-radius: 1rem;
             }
-            
+
             @media (max-width: 768px) {
                 #target-container {
                     padding: 1rem;
@@ -211,34 +238,41 @@
                     letter-spacing: 0.1em;
                 }
                 .main-content-container {
-                    border-radius: 1.5rem;
+                    border-radius: 1rem;
                 }
-                .gadget-corner { width: 20px; height: 20px; border-width: 2px; }
             }
 
             .distort-hover {
-                transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                transition: transform 0.25s ease;
             }
             .distort-hover:hover {
-                transform: scale(1.05);
-                filter: brightness(1.1);
+                transform: scale(1.04);
             }
 
-            /* Modern Nav */
+            /* Nav */
             header {
-                backdrop-filter: blur(12px);
-                background: rgba(26, 26, 26, 0.8) !important;
+                backdrop-filter: blur(10px);
+                background: rgba(20, 18, 28, 0.9) !important;
             }
 
-            /* Custom Scrollbar */
+            /* Scrollbar */
             ::-webkit-scrollbar { width: 8px; }
             ::-webkit-scrollbar-track { background: var(--primary-bg); }
-            ::-webkit-scrollbar-thumb { 
-                background: var(--mauve-mid); 
+            ::-webkit-scrollbar-thumb {
+                background: var(--mauve-mid);
                 border-radius: 10px;
                 border: 2px solid var(--primary-bg);
             }
             ::-webkit-scrollbar-thumb:hover { background: var(--accent-color); }
+
+            /* Respecte la préférence système de réduction des animations */
+            @media (prefers-reduced-motion: reduce) {
+                *, *::before, *::after {
+                    animation-duration: 0.01ms !important;
+                    animation-iteration-count: 1 !important;
+                    transition-duration: 0.01ms !important;
+                }
+            }
         </style>
 
         {% block stylesheets %}{% endblock %}
@@ -248,11 +282,11 @@
 
         {{ importmap('app') }}
         <script>
-            // Tesla Core Logic
+            // Menu burger mobile
             (function() {
-                if (window.soundLogicInitialized) return;
+                if (window.navLogicInitialized) return;
 
-                window.handleTeslaBurger = () => {
+                const handleBurger = () => {
                     const burgerBtn = document.getElementById('burger-menu-btn');
                     const overlay = document.getElementById('mobile-menu-overlay');
                     const icon = document.getElementById('burger-icon');
@@ -260,13 +294,17 @@
 
                     if (!burgerBtn || !overlay || burgerBtn.hasAttribute('data-listener-added')) return;
 
+                    const closeMenu = () => {
+                        overlay.classList.remove('translate-x-0');
+                        overlay.classList.add('translate-x-full');
+                        icon.textContent = '☰';
+                        document.body.style.overflow = '';
+                    };
+
                     const toggleMenu = () => {
                         const isOpen = overlay.classList.contains('translate-x-0');
                         if (isOpen) {
-                            overlay.classList.remove('translate-x-0');
-                            overlay.classList.add('translate-x-full');
-                            icon.textContent = '☰';
-                            document.body.style.overflow = '';
+                            closeMenu();
                         } else {
                             overlay.classList.remove('translate-x-full');
                             overlay.classList.add('translate-x-0');
@@ -276,171 +314,60 @@
                     };
 
                     burgerBtn.addEventListener('click', toggleMenu);
-                    mobileLinks.forEach(link => {
-                        link.addEventListener('click', () => {
-                            overlay.classList.remove('translate-x-0');
-                            overlay.classList.add('translate-x-full');
-                            icon.textContent = '☰';
-                            document.body.style.overflow = '';
-                        });
-                    });
+                    mobileLinks.forEach(link => link.addEventListener('click', closeMenu));
                     burgerBtn.setAttribute('data-listener-added', 'true');
                 };
 
-                const runAllTeslaLogic = () => {
-                    window.handleTeslaBurger();
-                    window.initTeslaSlime();
-                };
-
-                // Initial run
                 if (document.readyState === 'loading') {
-                    document.addEventListener('DOMContentLoaded', runAllTeslaLogic);
+                    document.addEventListener('DOMContentLoaded', handleBurger);
                 } else {
-                    runAllTeslaLogic();
+                    handleBurger();
                 }
+                document.addEventListener('turbo:load', handleBurger);
 
-                // Turbo run
-                document.addEventListener('turbo:load', runAllTeslaLogic);
-
-                window.soundLogicInitialized = true;
+                window.navLogicInitialized = true;
             })();
-
-            // Logic for Slime and Rain
-            window.initTeslaSlime = () => {
-                const rainCanvas = document.getElementById('slime-rain-canvas');
-                const edgeCanvas = document.getElementById('edge-slime-canvas');
-                if (!rainCanvas || !edgeCanvas || rainCanvas.hasAttribute('data-initialized')) return;
-                
-                rainCanvas.setAttribute('data-initialized', 'true');
-
-                const rCtx = rainCanvas.getContext('2d');
-                const eCtx = edgeCanvas.getContext('2d');
-                let width, height;
-
-                function resize() {
-                    width = rainCanvas.width = edgeCanvas.width = window.innerWidth;
-                    height = rainCanvas.height = edgeCanvas.height = window.innerHeight;
-                }
-                window.addEventListener('resize', resize);
-                resize();
-
-                class Particle {
-                    constructor(isEdge = false) {
-                        this.isEdge = isEdge;
-                        this.reset();
-                    }
-
-                    reset() {
-                        if (this.isEdge) {
-                            const onLeft = Math.random() > 0.5;
-                            this.x = onLeft ? Math.random() * 25 : width - Math.random() * 25;
-                            this.size = Math.random() * 3 + 1.5;
-                            this.speed = Math.random() * 0.4 + 0.1;
-                            this.gravity = 0.005;
-                            this.color = '#39ff14';
-                        } else {
-                            this.x = Math.random() * width;
-                            this.size = Math.random() * 30 + 5;
-                            this.speed = Math.random() * 1.5 + 0.5;
-                            this.gravity = 0.02;
-                            const r = Math.random();
-                            if (r > 0.5) this.color = '#39ff14';
-                            else if (r > 0.15) this.color = '#f1c40f';
-                            else this.color = '#8e44ad';
-                        }
-                        this.y = -Math.random() * 1000 - 100;
-                    }
-
-                    update() {
-                        this.speed += this.gravity;
-                        this.y += this.speed;
-                        if (this.y > height + 200) this.reset();
-                    }
-
-                    draw(ctx) {
-                        ctx.fillStyle = this.color;
-                        ctx.beginPath();
-                        if (this.isEdge) {
-                            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                            ctx.rect(this.x - this.size * 0.8, 0, this.size * 1.6, this.y);
-                        } else {
-                            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                            ctx.rect(this.x - this.size * 0.8, this.y - this.size * 2, this.size * 1.6, this.size * 2);
-                        }
-                        ctx.fill();
-                        ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
-                        ctx.beginPath();
-                        ctx.arc(this.x - this.size/3, this.y - this.size/3, this.size/4, 0, Math.PI * 2);
-                        ctx.fill();
-                    }
-                }
-
-                const rainParticles = [];
-                const edgeParticles = [];
-                for (let i = 0; i < 40; i++) rainParticles.push(new Particle(false));
-                for (let i = 0; i < 70; i++) edgeParticles.push(new Particle(true));
-
-                function animate() {
-                    rCtx.clearRect(0, 0, width, height);
-                    eCtx.clearRect(0, 0, width, height);
-                    rainParticles.forEach(p => { p.update(); p.draw(rCtx); });
-                    edgeParticles.forEach(p => { p.update(); p.draw(eCtx); });
-                    requestAnimationFrame(animate);
-                }
-                animate();
-            };
-            document.addEventListener('turbo:load', window.initTeslaSlime);
         </script>
     </head>
-    <body class="font-sans text-white antialiased min-h-screen overflow-x-hidden">
-        <div class="scanlines"></div>
-
+    <body class="font-sans text-white antialiased min-h-screen overflow-x-hidden flex flex-col">
         <!-- Google Tag Manager (noscript) -->
         <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-NHKVMFJR"
         height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <!-- End Google Tag Manager (noscript) -->
 
-        <svg xmlns="http://www.w3.org/2000/svg" version="1.1" class="hidden">
-          <defs>
-            <filter id="gooey-slime">
-              <feGaussianBlur in="SourceGraphic" stdDeviation="10" result="blur" />
-              <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 25 -12" result="goo" />
-              <feComposite in="SourceGraphic" in2="goo" operator="atop"/>
-            </filter>
-          </defs>
-        </svg>
-
-        <canvas id="slime-rain-canvas" class="gooey-filter"></canvas>
-        <canvas id="edge-slime-canvas" class="gooey-filter"></canvas>
-
-        <header class="border-b-4 border-accent sticky top-0 bg-primary z-[200] py-5 shadow-2xl">
+        {% set current_route = app.request.attributes.get('_route') %}
+        <header class="border-b border-accent/30 sticky top-0 bg-primary/95 backdrop-blur z-[200] py-4 shadow-lg">
             <div class="max-w-6xl mx-auto px-4 md:px-6">
                 <div class="flex flex-row justify-between items-center gap-4">
-                    <a href="{{ path('blog_index') }}" class="flex flex-col items-center md:items-start group text-center md:text-left glitch-hover">
-                        <span class="font-mystere text-3xl md:text-5xl tracking-widest text-accent group-hover:scale-105 transition-transform uppercase whitespace-nowrap drop-shadow-[0_0_15px_rgba(57,255,20,0.6)]">
-                            IMM<span class="inline-block animate-pulse -mx-1">🧅</span>NDE PLUS
+                    {# Logo #}
+                    <a href="{{ path('blog_index') }}" class="group flex items-baseline gap-2 whitespace-nowrap">
+                        <span class="font-mystere text-2xl md:text-3xl tracking-wider text-accent uppercase transition-[text-shadow] group-hover:[text-shadow:0_0_12px_rgba(57,255,20,0.5)]">
+                            IMM<span class="-mx-0.5">🧅</span>NDE PLUS
                         </span>
-                        <span class="hidden md:block text-[10px] font-bold tracking-[0.2em] uppercase text-mauve-light mt-1 text-center md:text-left">Enquêtes paranormales et révélations de l'ombre.</span>
                     </a>
-                    
+
                     {# Mobile Burger Button #}
-                    <button id="burger-menu-btn" class="md:hidden text-accent text-3xl focus:outline-none z-[300]">
+                    <button id="burger-menu-btn" class="md:hidden text-accent text-3xl focus:outline-none z-[300]" aria-label="Ouvrir le menu">
                         <span id="burger-icon">☰</span>
                     </button>
 
-                    <nav class="hidden md:flex items-center gap-6 font-black uppercase text-xs tracking-widest text-white">
-                        <a href="{{ path('blog_films') }}" class="hover:text-accent transition-all hover:scale-110 distort-hover">Les Films</a>
-                        <a href="{{ path('blog_articles') }}" class="hover:text-accent transition-all hover:scale-110 distort-hover">Les Articles</a>
-                        <a href="{{ path('blog_games') }}" class="text-accent hover:text-white transition-all hover:scale-110 distort-hover">Jeux</a>
-                        <a href="{{ path('app_contact') }}" class="hover:text-accent transition-colors uppercase italic text-[10px] font-black border-2 border-accent/30 px-3 py-1 rounded-full shadow-[0_0_10px_rgba(57,255,20,0.2)] distort-hover">Contact</a>
-                        
+                    {# Desktop Nav — épurée #}
+                    <nav class="hidden md:flex items-center gap-7 text-[13px] font-semibold uppercase tracking-wide text-gray-300">
+                        {% set nav_link = 'relative py-1 transition-colors hover:text-white after:absolute after:left-0 after:-bottom-0.5 after:h-px after:bg-accent after:transition-all' %}
+                        <a href="{{ path('blog_films') }}" class="{{ nav_link }} {{ current_route == 'blog_films' ? 'text-white after:w-full' : 'after:w-0 hover:after:w-full' }}">Films</a>
+                        <a href="{{ path('blog_articles') }}" class="{{ nav_link }} {{ current_route == 'blog_articles' ? 'text-white after:w-full' : 'after:w-0 hover:after:w-full' }}">Articles</a>
+                        <a href="{{ path('blog_games') }}" class="{{ nav_link }} {{ current_route == 'blog_games' ? 'text-white after:w-full' : 'after:w-0 hover:after:w-full' }}">Jeux</a>
+                        <a href="{{ path('app_contact') }}" class="{{ nav_link }} {{ current_route == 'app_contact' ? 'text-white after:w-full' : 'after:w-0 hover:after:w-full' }}">Contact</a>
+
+                        {# Séparateur + accès rédaction (discret) #}
+                        <span class="w-px h-4 bg-white/15" aria-hidden="true"></span>
                         {% if is_granted('ROLE_ADMIN') %}
-                            <div class="flex items-center gap-4 bg-mauve-dark/30 px-4 py-2 rounded-full border border-mauve-light/20">
-                                <span class="text-[10px] text-mauve-light lowercase italic">Connecté : <b class="text-accent not-italic uppercase">{{ app.user.pseudo ?: app.user.email }}</b></span>
-                                <a href="{{ path('admin') }}" class="bg-accent text-primary px-3 py-1 rounded-full font-black text-[9px] hover:scale-105 transition-all shadow-[0_0_15px_rgba(57,255,20,0.4)] uppercase distort-hover">Admin</a>
-                            </div>
+                            <a href="{{ path('admin') }}" class="inline-flex items-center gap-2 border border-accent/40 text-accent px-3 py-1.5 rounded-md text-[11px] hover:bg-accent hover:text-primary transition-colors">
+                                Admin
+                                <span class="text-mauve-light hover:text-primary normal-case font-normal lowercase">· {{ app.user.pseudo ?: app.user.email }}</span>
+                            </a>
                         {% else %}
-                            <a href="{{ path('admin') }}" class="bg-accent text-primary px-4 py-2 rounded font-black hover:scale-110 transition-all shadow-[0_0_15px_rgba(57,255,20,0.4)] uppercase text-center distort-hover">Espace Rédaction</a>
+                            <a href="{{ path('admin') }}" class="border border-accent/40 text-accent px-3 py-1.5 rounded-md text-[11px] hover:bg-accent hover:text-primary transition-colors">Espace Admin</a>
                         {% endif %}
                     </nav>
                 </div>
@@ -448,27 +375,24 @@
         </header>
 
         {# Mobile Menu Overlay #}
-        <div id="mobile-menu-overlay" class="fixed inset-0 bg-black z-[250] flex flex-col items-center justify-center translate-x-full transition-transform duration-500 md:hidden">
-            <nav class="flex flex-col items-center gap-10 font-mystere text-4xl tracking-[0.2em] text-white uppercase italic">
-                <a href="{{ path('blog_films') }}" class="hover:text-accent transition-all hover:scale-110 mobile-link">Les Films</a>
-                <a href="{{ path('blog_articles') }}" class="hover:text-accent transition-all hover:scale-110 mobile-link">Les Articles</a>
-                <a href="{{ path('blog_games') }}" class="text-accent hover:text-white transition-all hover:scale-110 mobile-link">Jeux</a>
-                <a href="{{ path('app_contact') }}" class="hover:text-accent transition-all hover:scale-110 mobile-link text-2xl">Contact</a>
-                <a href="{{ path('admin') }}" class="bg-accent text-primary px-8 py-4 rounded font-black text-xl hover:scale-110 transition-all shadow-[0_0_15px_rgba(57,255,20,0.4)] mobile-link">Espace Rédaction</a>
+        <div id="mobile-menu-overlay" class="fixed inset-0 bg-primary z-[250] flex flex-col items-center justify-center gap-10 translate-x-full transition-transform duration-300 md:hidden">
+            <span class="font-mystere text-3xl text-accent uppercase tracking-wider">IMM<span class="-mx-0.5">🧅</span>NDE PLUS</span>
+            <nav class="flex flex-col items-center gap-8 text-2xl font-semibold uppercase tracking-wide text-gray-200">
+                <a href="{{ path('blog_films') }}" class="hover:text-accent transition-colors mobile-link {{ current_route == 'blog_films' ? 'text-accent' }}">Films</a>
+                <a href="{{ path('blog_articles') }}" class="hover:text-accent transition-colors mobile-link {{ current_route == 'blog_articles' ? 'text-accent' }}">Articles</a>
+                <a href="{{ path('blog_games') }}" class="hover:text-accent transition-colors mobile-link {{ current_route == 'blog_games' ? 'text-accent' }}">Jeux</a>
+                <a href="{{ path('app_contact') }}" class="hover:text-accent transition-colors mobile-link {{ current_route == 'app_contact' ? 'text-accent' }}">Contact</a>
             </nav>
+            <a href="{{ path('admin') }}" class="border border-accent/40 text-accent px-6 py-3 rounded-md text-sm uppercase tracking-wide hover:bg-accent hover:text-primary transition-colors mobile-link">Espace Admin</a>
         </div>
 
-        <main class="py-16 relative z-20">
-            <div id="target-container" class="max-w-5xl mx-auto px-4 md:px-6 main-content-container py-16 min-h-[70vh]">
-                <div class="gadget-corner corner-tl"></div>
-                <div class="gadget-corner corner-tr"></div>
-                <div class="gadget-corner corner-bl"></div>
-                <div class="gadget-corner corner-br"></div>
+        <main class="py-8 md:py-12 relative z-20 flex-1 flex flex-col">
+            <div id="target-container" class="w-full max-w-5xl mx-auto px-4 md:px-6 main-content-container py-12 flex-1">
                 {% block body %}{% endblock %}
             </div>
         </main>
 
-        <footer class="bg-primary border-t-8 border-accent pt-20 pb-10 relative z-[100]">
+        <footer class="bg-primary border-t border-accent/30 pt-20 pb-24 relative z-[100]">
             <div class="max-w-6xl mx-auto px-4 md:px-6 text-white">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-16 mb-16 text-center md:text-left">
                     <div>
@@ -491,7 +415,6 @@
                     <div>
                         <h3 class="font-black text-accent uppercase tracking-[0.2em] mb-6 italic text-xl text-shadow-none text-white">Contact Secret</h3>
                         <p class="text-sm text-gray-400 font-bold uppercase tracking-widest text-shadow-none">
-                            Dénonciations : <br>
                             <a href="mailto:contact@immondeplus.fr" class="text-white font-black hover:text-accent transition-colors">contact@immondeplus.fr</a>
                         </p>
                     </div>
@@ -503,329 +426,280 @@
         </footer>
 
         {# ============================================================= #}
-        {#  MOTEUR DE MISÈRE — rend Imm🧅nde Plus encore plus immonde     #}
+        {#  LECTEUR MUSIQUE PERSISTANT                                    #}
+        {#  Le lecteur est construit en JS et attaché à <html> (HORS du   #}
+        {#  <body>). Turbo ne remplace QUE le <body> : un élément placé    #}
+        {#  sur documentElement n'est donc jamais re-rendu ni re-parsé,    #}
+        {#  l'iframe SoundCloud ne se recharge pas -> la lecture continue. #}
         {# ============================================================= #}
-        <div id="misere-hud" class="fixed bottom-4 left-4 z-[9999] pointer-events-none select-none font-mystere hidden md:block">
-            <div class="bg-black/70 backdrop-blur-sm border border-accent/40 rounded-xl px-4 py-2 shadow-[0_0_25px_rgba(57,255,20,0.25)]">
-                <div class="text-[8px] tracking-[0.3em] text-mauve-light uppercase font-sans font-black">Indice de Misère</div>
-                <div class="flex items-baseline gap-1">
-                    <span id="misere-count" class="text-accent text-2xl tracking-widest drop-shadow-[0_0_10px_rgba(57,255,20,0.6)]">0</span>
-                    <span class="text-accent/40 text-sm">‰</span>
-                </div>
-                <div id="misere-label" class="text-[8px] tracking-[0.25em] text-gray-400 uppercase font-sans font-bold flicker">Contamination en cours…</div>
-            </div>
-        </div>
-
-        <div id="onion-tears" class="fixed inset-0 z-[9998] pointer-events-none opacity-0 transition-opacity duration-300"
-             style="background: radial-gradient(circle at center, transparent 35%, rgba(57,255,20,0.15) 80%, rgba(68,51,122,0.5) 100%); mix-blend-mode: screen;"></div>
-
-        <div id="slime-toast"
-             class="fixed top-24 right-4 z-[9999] max-w-[260px] translate-x-[120%] transition-transform duration-500 ease-out pointer-events-none">
-            <div class="bg-black/85 backdrop-blur border-l-4 border-accent rounded-r-xl px-4 py-3 shadow-[0_0_30px_rgba(57,255,20,0.3)]">
-                <div class="text-[8px] tracking-[0.3em] text-accent uppercase font-black mb-1">🟢 BAVE ÉCRASÉE</div>
-                <div id="slime-msg" class="text-[11px] text-mauve-light font-bold uppercase tracking-wider leading-snug"></div>
-            </div>
-        </div>
-
-        <style>
-            @keyframes misere-fly {
-                0%   { transform: translate(0,0) rotate(0deg); }
-                25%  { transform: translate(40px,-30px) rotate(20deg); }
-                50%  { transform: translate(-25px,20px) rotate(-15deg); }
-                75%  { transform: translate(30px,35px) rotate(10deg); }
-                100% { transform: translate(0,0) rotate(0deg); }
-            }
-            .misere-fly {
-                position: fixed;
-                z-index: 9997;
-                pointer-events: none;
-                font-size: 18px;
-                opacity: 0.85;
-                will-change: transform;
-                filter: drop-shadow(0 0 3px rgba(0,0,0,0.6));
-            }
-            @keyframes slime-drip {
-                0%   { transform: translateY(0) scaleY(1); opacity: 0.9; }
-                70%  { opacity: 0.9; }
-                100% { transform: translateY(45px) scaleY(1.8); opacity: 0; }
-            }
-            .slime-drip {
-                position: fixed;
-                z-index: 9996;
-                pointer-events: none;
-                width: 7px; height: 7px;
-                border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
-                background: radial-gradient(circle at 30% 30%, #7dff5c, #39ff14 60%, #2bbf0e);
-                box-shadow: 0 0 8px rgba(57,255,20,0.7);
-                animation: slime-drip 1.1s ease-in forwards;
-            }
-            @keyframes global-glitch {
-                0%,100% { filter: none; transform: none; }
-                20% { filter: hue-rotate(40deg) saturate(2); transform: translate(-2px,1px) skewX(0.6deg); }
-                40% { filter: invert(0.04) hue-rotate(-30deg); transform: translate(3px,-2px); }
-                60% { filter: contrast(1.3); transform: translate(-1px,2px) skewY(0.4deg); }
-                80% { filter: hue-rotate(20deg); transform: translate(2px,0); }
-            }
-            body.misere-glitch { animation: global-glitch 0.45s steps(2) 2; }
-
-            /* ---- Slime fugitif ---- */
-            #slime-fugitif {
-                position: fixed;
-                z-index: 9995;
-                width: 64px; height: 64px;
-                pointer-events: none;
-                will-change: transform;
-                filter: drop-shadow(0 6px 6px rgba(0,0,0,0.5));
-                transition: opacity 0.25s;
-            }
-            #slime-fugitif.attrape { animation: slime-squish 0.35s ease-out; }
-            @keyframes slime-squish {
-                0%   { transform: scale(1,1); }
-                40%  { transform: scale(1.5,0.45); }
-                70%  { transform: scale(0.7,1.3); }
-                100% { transform: scale(0,0); opacity: 0; }
-            }
-            @keyframes splat-fly {
-                0%   { transform: translate(0,0) scale(1); opacity: 1; }
-                100% { transform: translate(var(--dx), var(--dy)) scale(0.2); opacity: 0; }
-            }
-            .splat-blob {
-                position: fixed;
-                z-index: 9994;
-                pointer-events: none;
-                border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
-                background: radial-gradient(circle at 30% 30%, #9dff7a, #39ff14 60%, #1f8f08);
-                box-shadow: 0 0 10px rgba(57,255,20,0.7);
-                animation: splat-fly 0.9s cubic-bezier(0.2,0.7,0.3,1) forwards;
-            }
-            @media (pointer: fine) and (min-width: 768px) {
-                body, body.font-sans { cursor: var(--slime-cursor), auto !important; }
-                a, button, [role="button"], input, textarea, select, label {
-                    cursor: var(--slime-cursor), pointer !important;
-                }
-            }
-        </style>
-
-        <script>
+        <script src="https://w.soundcloud.com/player/api.js" data-turbo-eval="false"></script>
+        <script data-turbo-eval="false">
             (function () {
-                if (window.misereEngineInitialized) return;
-                window.misereEngineInitialized = true;
+                if (window.scPlayerInitialized) return;
+                window.scPlayerInitialized = true;
 
-                const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                // --- Fond immonde : coulures de bave (hors <body>, jamais touché par Turbo) ---
+                (function buildSlimeBackground() {
+                    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
-                /* ---- Indice de Misère : ne fait que grimper ---- */
-                const counterEl = document.getElementById('misere-count');
-                const labelEl   = document.getElementById('misere-label');
-                const PALIERS = [
-                    [0,    'Contamination en cours…'],
-                    [120,  'Odeur détectée'],
-                    [300,  'Niveau préoccupant'],
-                    [600,  'Trognon exposé'],
-                    [999,  'IMMONDITUDE MAXIMALE'],
-                ];
-                let misere = parseInt(sessionStorage.getItem('misere') || '0', 10);
-                function renderMisere() {
-                    if (!counterEl) return;
-                    counterEl.textContent = misere;
-                    let label = PALIERS[0][1];
-                    for (const [seuil, txt] of PALIERS) if (misere >= seuil) label = txt;
-                    if (labelEl) labelEl.textContent = label;
+                    var bg = document.createElement('div');
+                    bg.id = 'slime-bg';
+                    bg.setAttribute('aria-hidden', 'true');
+
+                    var html = '';
+                    // Coulures accrochées en haut, réparties sur la largeur — épaisses et visibles
+                    var dripCount = window.innerWidth < 768 ? 10 : 18;
+                    for (var i = 0; i < dripCount; i++) {
+                        var left  = (i / dripCount) * 100 + (i % 2 ? 3 : -2); // réparti + léger décalage
+                        var len   = 140 + (i * 37 % 240);  // longueur variée 140-380px
+                        var dur   = 6 + (i * 13 % 7);       // durée 6-13s
+                        var delay = (i * 17 % 90) / 10;     // délai 0-9s
+                        var w     = 12 + (i % 5) * 5;       // largeur 12-32px (épaisses)
+                        html += '<span class="slime-drip-bg" style="left:' + left + '%;width:' + w + 'px;'
+                              + '--len:' + len + 'px;--dur:' + dur + 's;--delay:' + delay + 's;"></span>';
+                    }
+                    // Gouttes détachées qui tombent
+                    var fallCount = window.innerWidth < 768 ? 6 : 12;
+                    for (var j = 0; j < fallCount; j++) {
+                        var fLeft  = (j * 53 % 100);
+                        var fDur   = 8 + (j * 7 % 6);       // 8-14s
+                        var fDelay = (j * 29 % 120) / 10;   // 0-12s
+                        html += '<span class="slime-fall-bg" style="left:' + fLeft + '%;'
+                              + '--dur:' + fDur + 's;--delay:' + fDelay + 's;"></span>';
+                    }
+                    bg.innerHTML = html;
+                    document.documentElement.insertBefore(bg, document.body);
+                })();
+
+                // --- GAME OVER volant + mini-jeu "attrape-la" (clic = +1) ---
+                (function buildFlyingGameOver() {
+                    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+                    var img = document.createElement('img');
+                    img.src = '/img/game-over.png';
+                    img.alt = 'Attrape le game over !';
+                    img.title = 'Attrape-moi !';
+                    img.id = 'flying-gameover';
+                    img.style.cssText = [
+                        'position:fixed', 'top:0', 'left:0', 'z-index:40',
+                        'width:150px', 'height:auto', 'pointer-events:auto', 'cursor:crosshair',
+                        'filter:drop-shadow(0 0 14px rgba(57,255,20,0.55))',
+                        'will-change:transform', 'user-select:none', '-webkit-user-drag:none'
+                    ].join(';');
+                    document.documentElement.appendChild(img);
+
+                    // Petit HUD de score
+                    var hud = document.createElement('div');
+                    hud.id = 'gameover-score';
+                    hud.style.cssText = [
+                        'position:fixed', 'top:84px', 'left:16px', 'z-index:41', 'pointer-events:none',
+                        'font-family:Inter,sans-serif', 'background:rgba(10,10,10,0.7)',
+                        'border:1px solid rgba(57,255,20,0.4)', 'border-radius:12px',
+                        'padding:6px 12px', 'box-shadow:0 0 20px rgba(57,255,20,0.25)',
+                        'backdrop-filter:blur(4px)'
+                    ].join(';');
+                    hud.innerHTML = '<div style="font-size:8px;letter-spacing:0.25em;color:#b794f4;text-transform:uppercase;font-weight:800;">Mika attrapés</div>'
+                                  + '<div style="font-size:22px;color:#39ff14;font-weight:900;text-shadow:0 0 10px rgba(57,255,20,0.6);line-height:1;" id="gameover-count">0</div>';
+                    document.documentElement.appendChild(hud);
+                    var countEl = document.getElementById('gameover-count');
+
+                    var W = 150, H = 109; // ratio ~500x363
+                    var x = Math.random() * Math.max(0, window.innerWidth - W);
+                    var y = Math.random() * Math.max(0, window.innerHeight - H);
+                    var speed = 4;  // facteur de vitesse, augmente à chaque capture
+                    var vx = (Math.random() * 2 + 1) * (Math.random() < 0.5 ? -1 : 1);
+                    var vy = (Math.random() * 2 + 1) * (Math.random() < 0.5 ? -1 : 1);
+                    var rot = 0;
+                    var vrot = (Math.random() * 4 - 2);
+                    var t = 0;
+                    var score = parseInt(sessionStorage.getItem('gameoverScore') || '0', 10);
+                    countEl.textContent = score;
+
+                    function teleport() {
+                        x = Math.random() * Math.max(0, window.innerWidth - W);
+                        y = Math.random() * Math.max(0, window.innerHeight - H);
+                        var ang = Math.random() * Math.PI * 2;
+                        vx = Math.cos(ang); vy = Math.sin(ang);
+                    }
+
+                    function spawnPlus(px, py) {
+                        var s = document.createElement('div');
+                        s.textContent = '+1';
+                        s.style.cssText = 'position:fixed;left:' + px + 'px;top:' + py + 'px;z-index:42;'
+                            + 'color:#39ff14;font-family:Inter,sans-serif;font-weight:900;font-size:24px;'
+                            + 'text-shadow:0 0 10px rgba(57,255,20,0.8);pointer-events:none;'
+                            + 'transition:transform 0.7s ease-out,opacity 0.7s ease-out;';
+                        document.documentElement.appendChild(s);
+                        requestAnimationFrame(function () {
+                            s.style.transform = 'translateY(-40px) scale(1.4)';
+                            s.style.opacity = '0';
+                        });
+                        setTimeout(function () { s.remove(); }, 750);
+                    }
+
+                    img.addEventListener('click', function (e) {
+                        score += 1;
+                        sessionStorage.setItem('gameoverScore', String(score));
+                        countEl.textContent = score;
+                        spawnPlus(e.clientX - 10, e.clientY - 20);
+                        // effet "écrasé" puis téléportation + accélération
+                        speed = Math.min(14, speed + 0.8);
+                        img.style.transition = 'transform 0.12s ease-out';
+                        img.style.transform += ' scale(0.6)';
+                        // petit flash de score milestone
+                        if (score % 10 === 0) {
+                            hud.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.3)' }, { transform: 'scale(1)' }], { duration: 400 });
+                        }
+                        setTimeout(function () { img.style.transition = ''; teleport(); }, 120);
+                    });
+
+                    function frame() {
+                        t += 1;
+                        if (t % 45 === 0) {
+                            vx += (Math.random() * 2 - 1) * 0.6;
+                            vy += (Math.random() * 2 - 1) * 0.6;
+                            vrot = (Math.random() * 8 - 4);
+                            // normalise la direction (on garde une vitesse ~constante via 'speed')
+                            var m = Math.hypot(vx, vy) || 1;
+                            vx /= m; vy /= m;
+                        }
+                        rot += vrot;
+                        var maxX = window.innerWidth - W;
+                        var maxY = window.innerHeight - H;
+                        x += vx * speed; y += vy * speed;
+
+                        if (x < 0)    { x = 0;    vx = Math.abs(vx); vrot = (Math.random()*8-4); }
+                        if (x > maxX) { x = maxX; vx = -Math.abs(vx); vrot = (Math.random()*8-4); }
+                        if (y < 0)    { y = 0;    vy = Math.abs(vy); vrot = (Math.random()*8-4); }
+                        if (y > maxY) { y = maxY; vy = -Math.abs(vy); vrot = (Math.random()*8-4); }
+
+                        img.style.transform = 'translate(' + x + 'px,' + y + 'px) rotate(' + rot + 'deg)';
+                        requestAnimationFrame(frame);
+                    }
+                    requestAnimationFrame(frame);
+
+                    window.addEventListener('resize', function () {
+                        x = Math.min(x, Math.max(0, window.innerWidth - W));
+                        y = Math.min(y, Math.max(0, window.innerHeight - H));
+                    });
+                })();
+
+                // --- Construire le lecteur UNE seule fois, hors du <body> ---
+                var host = document.createElement('div');
+                host.id = 'player-permanent';
+                host.innerHTML = [
+                    '<div id="sc-player-bar" class="fixed bottom-0 left-0 right-0 z-[9999] bg-primary/95 backdrop-blur border-t border-accent/40 shadow-[0_-4px_30px_rgba(0,0,0,0.5)] transition-transform duration-300" style="font-family:Inter,sans-serif;">',
+                    '  <div class="max-w-6xl mx-auto px-3 md:px-6 py-2.5 flex items-center gap-3 md:gap-4">',
+                    '    <button id="sc-toggle" aria-label="Lecture / Pause" class="shrink-0 w-10 h-10 rounded-full bg-accent text-primary flex items-center justify-center text-lg font-black hover:scale-105 transition-transform shadow-[0_0_15px_rgba(57,255,20,0.4)]"><span id="sc-toggle-icon">▶</span></button>',
+                    '    <div class="flex-1 min-w-0">',
+                    '      <div class="flex items-center justify-between gap-2 mb-1">',
+                    '        <span id="sc-title" class="truncate text-[11px] md:text-xs font-bold uppercase tracking-wide text-white">J’arrive en Tesla</span>',
+                    '        <span id="sc-time" class="shrink-0 text-[10px] font-mono text-mauve-light tabular-nums">0:00</span>',
+                    '      </div>',
+                    '      <div id="sc-progress-track" class="h-1.5 w-full bg-white/10 rounded-full cursor-pointer overflow-hidden"><div id="sc-progress" class="h-full w-0 bg-accent rounded-full"></div></div>',
+                    '    </div>',
+                    '    <input id="sc-volume" type="range" min="0" max="100" value="80" class="hidden sm:block w-20 cursor-pointer" style="accent-color:#39ff14" aria-label="Volume">',
+                    '    <button id="sc-hide" aria-label="Masquer le lecteur" class="shrink-0 w-8 h-8 rounded-full text-mauve-light hover:text-accent hover:bg-white/5 transition-colors flex items-center justify-center text-sm">✕</button>',
+                    '  </div>',
+                    '  <iframe id="sc-widget" title="Lecteur SoundCloud" width="100%" height="0" frameborder="no" allow="autoplay" style="display:none" src="https://w.soundcloud.com/player/?url=https%3A%2F%2Fsoundcloud.com%2Fpuanteurputride%2Fjarrive-en-tesla&color=%2339ff14&auto_play=false&hide_related=true&show_comments=false&show_user=false&show_reposts=false&show_teaser=false&visual=false"></iframe>',
+                    '</div>',
+                    '<button id="sc-show" aria-label="Afficher le lecteur" class="hidden fixed bottom-4 right-4 z-[9999] w-12 h-12 rounded-full bg-accent text-primary text-xl shadow-[0_0_20px_rgba(57,255,20,0.5)] hover:scale-105 transition-transform">🎵</button>'
+                ].join('');
+                // Attaché à <html>, PAS à <body> -> Turbo n'y touche jamais.
+                document.documentElement.appendChild(host);
+
+                var iframe   = document.getElementById('sc-widget');
+                if (!iframe || typeof SC === 'undefined') return;
+
+                var widget      = SC.Widget(iframe);
+                var bar         = document.getElementById('sc-player-bar');
+                var toggleBtn   = document.getElementById('sc-toggle');
+                var toggleIcon  = document.getElementById('sc-toggle-icon');
+                var titleEl     = document.getElementById('sc-title');
+                var timeEl      = document.getElementById('sc-time');
+                var progressEl  = document.getElementById('sc-progress');
+                var trackEl     = document.getElementById('sc-progress-track');
+                var volumeEl    = document.getElementById('sc-volume');
+                var hideBtn     = document.getElementById('sc-hide');
+                var showBtn     = document.getElementById('sc-show');
+
+                var isPlaying = false;
+                var duration  = 0;
+
+                function fmt(ms) {
+                    var s = Math.floor((ms || 0) / 1000);
+                    var m = Math.floor(s / 60);
+                    s = s % 60;
+                    return m + ':' + (s < 10 ? '0' : '') + s;
                 }
-                function bumpMisere(n) {
-                    misere = Math.min(999, misere + n);
-                    sessionStorage.setItem('misere', String(misere));
-                    renderMisere();
+                function setIcon(playing) {
+                    toggleIcon.textContent = playing ? '❚❚' : '▶';
                 }
-                renderMisere();
-                if (!reduce) setInterval(() => bumpMisere(1), 1800);
 
-                /* ---- Goutte de bave qui suit le curseur ---- */
-                let lastDrip = 0;
-                if (!reduce) document.addEventListener('mousemove', (e) => {
-                    const now = e.timeStamp;
-                    if (now - lastDrip < 90) return;
-                    lastDrip = now;
-                    const d = document.createElement('div');
-                    d.className = 'slime-drip';
-                    d.style.left = (e.clientX - 3) + 'px';
-                    d.style.top  = (e.clientY + 4) + 'px';
-                    document.body.appendChild(d);
-                    setTimeout(() => d.remove(), 1100);
+                widget.bind(SC.Widget.Events.READY, function () {
+                    widget.setVolume(parseInt(volumeEl.value, 10));
+                    widget.getDuration(function (d) { duration = d; });
+                    widget.getCurrentSound(function (sound) {
+                        if (sound && sound.title) titleEl.textContent = sound.title;
+                    });
+
+                    // Tentative de lecture auto (souvent bloquée par le navigateur tant
+                    // qu'il n'y a pas eu d'interaction — on retombe alors sur le bouton play).
+                    widget.play();
+
+                    // Si l'autoplay est bloqué, on démarre au tout premier clic/touche sur la page.
+                    var kick = function () {
+                        if (!isPlaying) widget.play();
+                        document.removeEventListener('click', kick);
+                        document.removeEventListener('keydown', kick);
+                        document.removeEventListener('touchstart', kick);
+                    };
+                    document.addEventListener('click', kick);
+                    document.addEventListener('keydown', kick);
+                    document.addEventListener('touchstart', kick);
                 });
 
-                /* ---- Essaim de mouches ---- */
-                function spawnFlies(count) {
-                    for (let i = 0; i < count; i++) {
-                        const f = document.createElement('div');
-                        f.className = 'misere-fly';
-                        f.textContent = Math.random() > 0.5 ? '🪰' : '🦟';
-                        f.style.left = Math.random() * 90 + 'vw';
-                        f.style.top  = Math.random() * 80 + 'vh';
-                        f.style.animation = `misere-fly ${4 + Math.random() * 5}s ease-in-out ${Math.random() * 3}s infinite`;
-                        f.style.fontSize = (12 + Math.random() * 14) + 'px';
-                        document.body.appendChild(f);
-                    }
-                }
-                if (!reduce) spawnFlies(window.innerWidth < 768 ? 3 : 7);
+                widget.bind(SC.Widget.Events.PLAY,  function () { isPlaying = true;  setIcon(true);  });
+                widget.bind(SC.Widget.Events.PAUSE, function () { isPlaying = false; setIcon(false); });
 
-                /* ---- Toast réutilisé pour le cri du slime ---- */
-                const toast = document.getElementById('slime-toast');
-                const toastMsg = document.getElementById('slime-msg');
+                // Fin du morceau -> on reboucle au début.
+                widget.bind(SC.Widget.Events.FINISH, function () {
+                    widget.seekTo(0);
+                    widget.play();
+                });
 
-                /* ---- Larmes d'oignon : glitch + vignette occasionnels ---- */
-                const tears = document.getElementById('onion-tears');
-                function onionTear() {
-                    if (reduce) return;
-                    document.body.classList.add('misere-glitch');
-                    if (tears) tears.style.opacity = '1';
-                    bumpMisere(8);
-                    setTimeout(() => {
-                        document.body.classList.remove('misere-glitch');
-                        if (tears) tears.style.opacity = '0';
-                    }, 900);
-                }
-                if (!reduce) setInterval(onionTear, 23000);
+                widget.bind(SC.Widget.Events.PLAY_PROGRESS, function (e) {
+                    if (!duration) { widget.getDuration(function (d) { duration = d; }); return; }
+                    var pct = Math.min(100, (e.currentPosition / duration) * 100);
+                    progressEl.style.width = pct + '%';
+                    timeEl.textContent = fmt(e.currentPosition);
+                });
 
-                /* ---- La bave : mascotte SVG réutilisable ---- */
-                function slimeSVG(size, sad) {
-                    const mouth = sad
-                        ? "<path d='M36 70 Q50 60 64 70' stroke='%230a3d02' stroke-width='3.5' fill='none' stroke-linecap='round'/>"
-                        : "<path d='M38 64 Q50 76 62 64' stroke='%230a3d02' stroke-width='3.5' fill='none' stroke-linecap='round'/>";
-                    return "<svg xmlns='http://www.w3.org/2000/svg' width='" + size + "' height='" + size + "' viewBox='0 0 100 100'>"
-                        + "<defs><radialGradient id='sg' cx='35%25' cy='28%25'>"
-                        + "<stop offset='0%25' stop-color='%239dff7a'/><stop offset='55%25' stop-color='%2339ff14'/><stop offset='100%25' stop-color='%231f8f08'/>"
-                        + "</radialGradient></defs>"
-                        + "<path d='M50 8 C76 8 91 28 91 51 C91 69 96 78 92 88 C89 95 84 88 79 90 C74 92 73 84 67 86 C61 88 59 97 51 96 C45 95 45 86 39 87 C33 88 31 97 25 92 C19 87 24 79 20 75 C12 67 9 59 9 50 C9 27 24 8 50 8 Z' fill='url(%23sg)'/>"
-                        + "<ellipse cx='37' cy='30' rx='11' ry='7' fill='%23ffffff' opacity='0.45'/>"
-                        + "<circle cx='40' cy='46' r='8.5' fill='%23fff'/><circle cx='62' cy='46' r='8.5' fill='%23fff'/>"
-                        + "<circle cx='41' cy='49' r='4.2' fill='%23000'/><circle cx='63' cy='49' r='4.2' fill='%23000'/>"
-                        + (sad ? "<path d='M37 58 Q40 67 36 72' stroke='%23a8e6ff' stroke-width='2.5' fill='none' opacity='0.8'/>" : "")
-                        + mouth + "</svg>";
-                }
+                toggleBtn.addEventListener('click', function () {
+                    widget.isPaused(function (paused) { paused ? widget.play() : widget.pause(); });
+                });
 
-                /* Curseur slime (desktop pointeur fin uniquement) */
-                const fine = window.matchMedia('(pointer: fine)').matches && window.innerWidth >= 768;
-                if (fine) {
-                    const curUri = "data:image/svg+xml," + slimeSVG(36, true);
-                    document.documentElement.style.setProperty('--slime-cursor', "url(\"" + curUri + "\") 18 18");
-                }
+                volumeEl.addEventListener('input', function () {
+                    widget.setVolume(parseInt(volumeEl.value, 10));
+                });
 
-                /* Slime fugitif et misérable */
-                if (fine && !reduce) {
-                    const sprite = document.createElement('img');
-                    sprite.id = 'slime-fugitif';
-                    sprite.alt = 'bave fugitive';
-                    sprite.src = "data:image/svg+xml," + slimeSVG(64, true);
-                    document.body.appendChild(sprite);
+                // Clic sur la barre de progression -> déplacement dans le morceau
+                trackEl.addEventListener('click', function (ev) {
+                    if (!duration) return;
+                    var rect = trackEl.getBoundingClientRect();
+                    var ratio = (ev.clientX - rect.left) / rect.width;
+                    widget.seekTo(Math.max(0, Math.min(1, ratio)) * duration);
+                });
 
-                    const mouse = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
-                    document.addEventListener('mousemove', (e) => { mouse.x = e.clientX; mouse.y = e.clientY; });
-
-                    const S = { x: Math.random() * window.innerWidth, y: Math.random() * window.innerHeight,
-                                vx: 0, vy: 0, tx: 0, ty: 0, t: 0, caught: false };
-                    function pickTarget() {
-                        S.tx = 40 + Math.random() * (window.innerWidth - 80);
-                        S.ty = 40 + Math.random() * (window.innerHeight - 80);
-                    }
-                    pickTarget();
-                    setInterval(() => { if (!S.caught) pickTarget(); }, 2600);
-
-                    const CRIS = [
-                        "SPLOURTCH !", "Tu m'as eu… encore.", "Je suis si misérable 😭",
-                        "Laisse-moi suinter en paix !", "BLEUARGH.", "Pourquoi moi…",
-                        "*bruit de pelure mouillée*", "Aïe, ma gélatine !",
-                    ];
-                    let dripT = 0, crisIdx = 0;
-
-                    function splat(x, y) {
-                        for (let i = 0; i < 16; i++) {
-                            const b = document.createElement('div');
-                            b.className = 'splat-blob';
-                            const sz = 6 + Math.random() * 16;
-                            b.style.width = sz + 'px'; b.style.height = sz + 'px';
-                            b.style.left = (x - sz / 2) + 'px';
-                            b.style.top  = (y - sz / 2) + 'px';
-                            const ang = Math.random() * Math.PI * 2, dist = 50 + Math.random() * 140;
-                            b.style.setProperty('--dx', Math.cos(ang) * dist + 'px');
-                            b.style.setProperty('--dy', (Math.sin(ang) * dist + 60) + 'px');
-                            document.body.appendChild(b);
-                            setTimeout(() => b.remove(), 950);
-                        }
-                    }
-
-                    function catchSlime() {
-                        if (S.caught) return;
-                        S.caught = true;
-                        sprite.classList.add('attrape');
-                        splat(S.x + 32, S.y + 32);
-                        bumpMisere(50);
-                        if (toast && toastMsg) {
-                            toastMsg.textContent = CRIS[crisIdx++ % CRIS.length];
-                            toast.classList.remove('translate-x-[120%]');
-                            setTimeout(() => toast.classList.add('translate-x-[120%]'), 3000);
-                        }
-                        document.body.classList.add('misere-glitch');
-                        setTimeout(() => document.body.classList.remove('misere-glitch'), 450);
-                        setTimeout(() => {
-                            sprite.classList.remove('attrape');
-                            S.x = Math.random() > 0.5 ? -60 : window.innerWidth + 60;
-                            S.y = Math.random() * window.innerHeight;
-                            S.vx = S.vy = 0;
-                            pickTarget();
-                            sprite.style.opacity = '1';
-                            S.caught = false;
-                        }, 1400);
-                    }
-
-                    function tick(now) {
-                        if (!S.caught) {
-                            S.t += 0.05;
-                            const dxm = (S.x + 32) - mouse.x, dym = (S.y + 32) - mouse.y;
-                            const distM = Math.hypot(dxm, dym);
-
-                            if (distM < 95) { catchSlime(); }
-                            else {
-                                let ax, ay;
-                                if (distM < 230) {            // panique : fuit le curseur
-                                    ax = (dxm / distM) * 0.9;
-                                    ay = (dym / distM) * 0.9;
-                                } else {                       // errance molle vers une cible
-                                    const dxt = S.tx - S.x, dyt = S.ty - S.y;
-                                    const dt = Math.hypot(dxt, dyt) || 1;
-                                    ax = (dxt / dt) * 0.12;
-                                    ay = (dyt / dt) * 0.12;
-                                }
-                                S.vx = S.vx * 0.92 + ax;
-                                S.vy = S.vy * 0.92 + ay + 0.03;           // un peu de gravité = ça s'affaisse
-                                S.vx += Math.sin(S.t * 1.7) * 0.10;       // dandinement misérable
-                                S.x += S.vx;
-                                S.y += S.vy;
-
-                                // rebonds mous sur les bords
-                                if (S.x < 0) { S.x = 0; S.vx = Math.abs(S.vx) * 0.6; }
-                                if (S.x > window.innerWidth - 64) { S.x = window.innerWidth - 64; S.vx = -Math.abs(S.vx) * 0.6; }
-                                if (S.y < 0) { S.y = 0; S.vy = Math.abs(S.vy) * 0.6; }
-                                if (S.y > window.innerHeight - 64) { S.y = window.innerHeight - 64; S.vy = -Math.abs(S.vy) * 0.4; }
-
-                                const tilt = Math.max(-18, Math.min(18, S.vx * 4));
-                                sprite.style.transform = "translate(" + S.x + "px," + S.y + "px) rotate(" + tilt + "deg) scaleY(" + (1 - Math.min(0.2, Math.abs(S.vy) * 0.05)) + ")";
-
-                                // laisse une traînée de bave
-                                if (now - dripT > 130) {
-                                    dripT = now;
-                                    const d = document.createElement('div');
-                                    d.className = 'slime-drip';
-                                    d.style.left = (S.x + 28) + 'px';
-                                    d.style.top  = (S.y + 50) + 'px';
-                                    document.body.appendChild(d);
-                                    setTimeout(() => d.remove(), 1100);
-                                }
-                            }
-                        }
-                        requestAnimationFrame(tick);
-                    }
-                    requestAnimationFrame(tick);
-                }
+                // Masquer / réafficher la barre (la musique continue de jouer)
+                hideBtn.addEventListener('click', function () {
+                    bar.style.transform = 'translateY(110%)';
+                    showBtn.classList.remove('hidden');
+                });
+                showBtn.addEventListener('click', function () {
+                    bar.style.transform = '';
+                    showBtn.classList.add('hidden');
+                });
             })();
         </script>
     </body>

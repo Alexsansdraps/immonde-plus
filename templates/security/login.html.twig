@@ -5,7 +5,7 @@
 {% block body %}
 <div class="max-w-md mx-auto py-12">
     <div class="bg-primary/80 p-8 md:p-12 rounded-3xl border-2 border-mauve-dark shadow-2xl">
-        <h1 class="font-mystere text-4xl text-accent mb-8 italic tracking-widest text-center uppercase">Accès Rédaction</h1>
+        <h1 class="font-mystere text-4xl text-accent mb-8 italic tracking-widest text-center uppercase">Accès Admin</h1>
         
         <form method="post" class="space-y-6">
             {% if error %}
@@ -23,14 +23,14 @@
             {% endif %}
 
             <div class="space-y-2">
-                <label for="inputPseudo" class="block text-[10px] font-black uppercase tracking-widest text-mauve-light">Pseudo d'Infiltré</label>
+                <label for="inputPseudo" class="block text-[10px] font-black uppercase tracking-widest text-mauve-light">Identifiant</label>
                 <input type="text" value="{{ last_username }}" name="pseudo" id="inputPseudo" 
                     class="w-full bg-mauve-dark/20 border-0 border-b-2 border-mauve-dark focus:border-accent focus:ring-0 px-4 py-3 transition-colors text-white font-bold placeholder-mauve-dark/50" 
                     autocomplete="username" required autofocus placeholder="Votre pseudo...">
             </div>
 
             <div class="space-y-2">
-                <label for="inputPassword" class="block text-[10px] font-black uppercase tracking-widest text-mauve-light">Code Secret</label>
+                <label for="inputPassword" class="block text-[10px] font-black uppercase tracking-widest text-mauve-light">Mot de passe</label>
                 <input type="password" name="password" id="inputPassword" 
                     class="w-full bg-mauve-dark/20 border-0 border-b-2 border-mauve-dark focus:border-accent focus:ring-0 px-4 py-3 transition-colors text-white font-bold placeholder-mauve-dark/50" 
                     autocomplete="current-password" required placeholder="••••••••">
@@ -41,14 +41,14 @@
             <div class="pt-6">
                 <button type="submit" 
                     class="w-full bg-accent text-primary px-12 py-4 rounded-full font-black uppercase text-xs tracking-widest hover:scale-105 transition-all shadow-[0_0_20px_rgba(57,255,20,0.3)] hover:shadow-accent/40">
-                    S'infiltrer dans l'administration
+                    Se connecter
                 </button>
             </div>
         </form>
 
         <div class="mt-12 text-center">
             <a href="{{ path('blog_index') }}" class="inline-flex items-center gap-2 text-mauve-light font-black uppercase text-[10px] tracking-[0.2em] hover:text-accent transition-colors">
-                <span class="text-lg">←</span> Retour à la surface
+                <span class="text-lg">←</span> Retour à l'accueil
             </a>
         </div>
     </div>

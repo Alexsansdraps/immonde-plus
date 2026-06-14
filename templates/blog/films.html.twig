@@ -5,7 +5,7 @@
 {% block body %}
     <div class="border-b-2 border-accent pb-8 mb-12">
         <h1 class="font-mystere text-5xl tracking-widest text-accent italic uppercase text-shadow-[0_0_15px_rgba(57,255,20,0.5)]">Le Cinéma de l'Étrange</h1>
-        <p class="text-mauve-light mt-2 font-bold uppercase text-[10px] tracking-[0.3em]">Révélations et enquêtes exclusives en format cinéma.</p>
+        <p class="text-mauve-light mt-2 font-bold uppercase text-[10px] tracking-[0.3em]">Tous les films de Mickael Emond, en accès direct.</p>
     </div>
 
     <div class="mb-20 text-center relative group">
@@ -60,7 +60,7 @@
                 <h2 class="font-mystere text-xl leading-tight group-hover:text-accent transition-colors tracking-widest italic uppercase">
                     {{ s.title }}
                 </h2>
-                <span class="text-[9px] font-black uppercase text-mauve-light tracking-tighter opacity-50 mt-1">Série Archive</span>
+                <span class="text-[9px] font-black uppercase text-mauve-light tracking-tighter opacity-50 mt-1">Série</span>
             </a>
         {% endfor %}
 
@@ -100,7 +100,7 @@
 
         {% if series|length == 0 and standaloneFilms|length == 0 %}
             <div class="text-center py-32 col-span-full border-2 border-dashed border-white/5 rounded-[3rem]">
-                <p class="text-mauve-light font-black italic uppercase tracking-[0.4em] opacity-40">Aucun dossier correspondant à cette fréquence.</p>
+                <p class="text-mauve-light font-black italic uppercase tracking-[0.4em] opacity-40">Aucun film correspondant à cette recherche.</p>
             </div>
         {% endif %}
     </div>
