@@ -24,11 +24,11 @@ Dans un terminal, **à la racine du projet**, exécuter les commandes dans l'ord
 # 1. Installer les dépendances PHP
 composer install
 
-# 2. Créer la base de données (SQLite en local) + appliquer les migrations
+# 2. Créer la base de données (SQLite en local) + le schéma
 php bin/console doctrine:database:create
-php bin/console doctrine:migrations:migrate
+php bin/console doctrine:schema:create
 
-# 3. (Optionnel) Charger des données de démonstration
+# 3. Charger les données de démonstration (articles, comptes, catégories…)
 php bin/console doctrine:fixtures:load
 
 # 4. Démarrer le serveur web
@@ -41,6 +41,19 @@ Pour arrêter le serveur : `Ctrl + C` (ou `symfony server:stop`).
 
 > **Sans la Symfony CLI**, remplacer l'étape 4 par : `php -S localhost:8000 -t public/`
 > **Configuration locale** (base de prod, clés…) : copier `.env` vers `.env.local` (non versionné) et y mettre vos valeurs.
+> **Base de données** : on utilise `doctrine:schema:create` (et non `migrations:migrate`) car le schéma fait foi à partir des entités. Pour repartir d'une base propre : `php bin/console doctrine:database:drop --force` puis reprendre à l'étape 2.
+
+## Back-office (administration)
+
+Le back-office **EasyAdmin** est accessible sur **http://localhost:8000/admin** (connexion requise).
+
+Avec les données de démonstration chargées (étape 3), un compte administrateur est disponible :
+
+| Email | Mot de passe |
+|---|---|
+| `admin@immonde.plus` | `admin123` |
+
+> ⚠️ Ces identifiants sont des **données de démonstration locales uniquement** — à ne jamais utiliser en production.
 
 ## Configuration & secrets
 
