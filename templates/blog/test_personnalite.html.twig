@@ -1,0 +1,434 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Quel Immonde Es-Tu ? - Test de Personnalité | Imm🧅nde Plus{% endblock %}
+
+{% block body %}
+<div id="quiz-portal" class="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
+    <div class="mb-12">
+        <h1 class="font-mystere text-5xl md:text-7xl text-accent uppercase tracking-widest italic mb-6 glitch-hover">Quel Immonde Es-Tu ?</h1>
+        <p class="text-mauve-light font-black uppercase text-xs md:text-sm tracking-[0.4em] flicker">TEST DE PERSONNALITÉ DES ÉGOUTS</p>
+    </div>
+
+    <div class="max-w-2xl w-full bg-primary/60 p-8 rounded-3xl border border-mauve-dark mb-10">
+        <p class="text-white text-sm font-bold uppercase tracking-widest leading-relaxed opacity-80">
+            Réponds honnêtement à ces <span class="text-accent">20 questions</span> pour découvrir quel archétype de l'Immonde sommeille en toi.<br>
+            <span class="text-mauve-light text-xs">Résultats garantis non remboursables.</span>
+        </p>
+    </div>
+
+    <button id="start-btn" class="group relative bg-accent text-primary px-16 py-8 rounded-full font-mystere text-3xl md:text-5xl tracking-widest hover:scale-110 transition-all shadow-[0_0_50px_rgba(57,255,20,0.6)] uppercase animate-pulse">
+        RÉVÉLER MON IMMONDE
+    </button>
+</div>
+
+{# ===== QUIZ CONTAINER ===== #}
+<div id="quiz-container" class="hidden max-w-2xl mx-auto px-4 pb-20">
+
+    {# Progress bar #}
+    <div class="mb-10">
+        <div class="flex justify-between items-center mb-3">
+            <span id="question-counter" class="text-accent font-black text-xs uppercase tracking-widest">Question 1 / 7</span>
+            <span id="progress-pct" class="text-mauve-light font-black text-xs uppercase tracking-widest">0%</span>
+        </div>
+        <div class="w-full bg-black/60 rounded-full h-3 border border-mauve-dark overflow-hidden">
+            <div id="progress-bar" class="h-full bg-accent rounded-full transition-all duration-500 shadow-[0_0_10px_rgba(57,255,20,0.8)]" style="width:0%"></div>
+        </div>
+    </div>
+
+    {# Question card #}
+    <div id="question-card" class="bg-primary/60 rounded-3xl border-2 border-mauve-dark p-8 md:p-12 shadow-2xl">
+        <p id="question-text" class="font-mystere text-2xl md:text-3xl text-white uppercase tracking-wide leading-snug mb-10 text-center"></p>
+        <div id="answers-container" class="flex flex-col gap-4"></div>
+    </div>
+</div>
+
+{# ===== RESULT CONTAINER ===== #}
+<div id="result-container" class="hidden max-w-2xl mx-auto px-4 pb-20 text-center">
+    <div class="mb-8">
+        <h2 class="font-mystere text-4xl md:text-6xl text-accent uppercase tracking-widest italic mb-4 glitch-hover">Résultat</h2>
+        <p class="text-mauve-light font-black uppercase text-xs tracking-[0.4em] flicker">ANALYSE COMPLÈTE DES ÉGOUTS</p>
+    </div>
+
+    <div class="bg-primary/60 rounded-3xl border-2 border-accent p-8 md:p-12 shadow-[0_0_40px_rgba(57,255,20,0.2)]">
+        <div id="result-image-wrapper" class="mb-8 flex justify-center">
+            <img id="result-image" src="" alt="Résultat" class="w-48 h-48 md:w-64 md:h-64 object-cover rounded-full border-4 border-accent shadow-[0_0_30px_rgba(57,255,20,0.5)]">
+        </div>
+        <h3 id="result-title" class="font-mystere text-3xl md:text-5xl text-accent uppercase tracking-widest italic mb-4"></h3>
+        <p id="result-subtitle" class="text-mauve-light font-black uppercase text-xs tracking-[0.3em] mb-6"></p>
+        <p id="result-description" class="text-white text-sm font-bold uppercase tracking-wider leading-relaxed opacity-80 mb-10"></p>
+
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <button id="retry-btn" class="bg-accent text-primary px-10 py-4 rounded-full font-mystere text-xl tracking-widest uppercase hover:scale-105 transition-all shadow-[0_0_20px_rgba(57,255,20,0.4)]">
+                RECOMMENCER
+            </button>
+            <a href="{{ path('blog_games') }}" class="bg-transparent border-2 border-mauve-dark text-mauve-light px-10 py-4 rounded-full font-mystere text-xl tracking-widest uppercase hover:border-accent hover:text-accent transition-all">
+                AUTRES JEUX
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+
+const QUESTIONS = [
+  {
+    text: "Tu lances un live sans préparation. L’ambiance est :",
+    answers: [
+      { text: "Chaos total, tu improvises en prétendant que c’est du génie", scores: { dark_micka: 3, ego_micka: 3, happy: 0, kpop: 0, thacher: 0, fromage: 1 } },
+      { text: "Un peu bancal mais drôle malgré toi", scores: { dark_micka: 1, ego_micka: 1, happy: 3, kpop: 0, thacher: 0, fromage: 0 } },
+      { text: "Émotionnel, tu doutes mais tu continues", scores: { dark_micka: 2, ego_micka: 0, happy: 0, kpop: 3, thacher: 0, fromage: 0 } },
+      { text: "Contrôlé, structuré, propre", scores: { dark_micka: 0, ego_micka: 0, happy: 0, kpop: 0, thacher: 3, fromage: 0 } }
+    ]
+  },
+
+  {
+    text: "Ton appartement ressemble à :",
+    answers: [
+      { text: "Un plateau de tournage abandonné depuis longtemps", scores: { dark_micka: 3, ego_micka: 2, happy: 0, kpop: 0, thacher: 0, fromage: 1 } },
+      { text: "Un bordel que tu défends comme une “esthétique”", scores: { dark_micka: 2, ego_micka: 3, happy: 0, kpop: 0, thacher: 0, fromage: 0 } },
+      { text: "Pas parfait mais vivable", scores: { dark_micka: 0, ego_micka: 0, happy: 3, kpop: 1, thacher: 0, fromage: 0 } },
+      { text: "Minimaliste et parfaitement rangé", scores: { dark_micka: 0, ego_micka: 0, happy: 0, kpop: 0, thacher: 3, fromage: 0 } }
+    ]
+  },
+
+  {
+    text: "Quand quelqu’un critique ton contenu :",
+    answers: [
+      { text: "Tu refuses mentalement d’accepter la critique", scores: { dark_micka: 3, ego_micka: 3, happy: 0, kpop: 0, thacher: 0, fromage: 0 } },
+      { text: "Tu dis que c’est incompris", scores: { dark_micka: 2, ego_micka: 3, happy: 0, kpop: 0, thacher: 0, fromage: 0 } },
+      { text: "Tu le prends mal mais tu réfléchis après", scores: { dark_micka: 1, ego_micka: 0, happy: 1, kpop: 2, thacher: 0, fromage: 0 } },
+      { text: "Tu ajustes proprement sans émotion", scores: { dark_micka: 0, ego_micka: 0, happy: 0, kpop: 0, thacher: 3, fromage: 0 } }
+    ]
+  },
+
+  {
+    text: "Ton rapport à l’alcool en live :",
+    answers: [
+      { text: "Tu deviens une version plus instable de toi-même", scores: { dark_micka: 3, ego_micka: 3, happy: 0, kpop: 0, thacher: 0, fromage: 0 } },
+      { text: "Tu penses que ça rend ton contenu meilleur", scores: { dark_micka: 2, ego_micka: 3, happy: 0, kpop: 0, thacher: 0, fromage: 0 } },
+      { text: "Tu deviens juste plus sociable", scores: { dark_micka: 0, happy: 3, kpop: 1, thacher: 0, fromage: 0 } },
+      { text: "Tu refuses de perdre le contrôle", scores: { dark_micka: 0, ego_micka: 0, happy: 0, kpop: 0, thacher: 3, fromage: 0 } }
+    ]
+  },
+
+  {
+    text: "Ton plus grand projet artistique :",
+    answers: [
+      { text: "Un échec que tu présentes comme une œuvre incomprise", scores: { dark_micka: 3, ego_micka: 3, happy: 0, kpop: 0, thacher: 0, fromage: 0 } },
+      { text: "Un truc bizarre que personne n’a compris", scores: { dark_micka: 2, ego_micka: 2, happy: 0, kpop: 0, thacher: 0, fromage: 0 } },
+      { text: "Un petit succès inattendu", scores: { dark_micka: 0, happy: 3, kpop: 1, thacher: 0, fromage: 0 } },
+      { text: "Un projet parfaitement contrôlé", scores: { dark_micka: 0, ego_micka: 0, happy: 0, kpop: 0, thacher: 3, fromage: 0 } }
+    ]
+  },
+
+  {
+    text: "Ton rapport à Thomas (rival imaginaire) :",
+    answers: [
+      { text: "Tu le compares constamment à toi dans ta tête", scores: { dark_micka: 3, ego_micka: 3, happy: 0, kpop: 0, thacher: 0, fromage: 0 } },
+      { text: "Tu fais semblant de t’en foutre mais ça reste là", scores: { dark_micka: 2, ego_micka: 2, happy: 0, kpop: 0, thacher: 0, fromage: 0 } },
+      { text: "Tu veux juste progresser sans rivalité", scores: { dark_micka: 0, happy: 2, kpop: 1, thacher: 1, fromage: 0 } },
+      { text: "Tu élimines la concurrence par la discipline", scores: { dark_micka: 0, ego_micka: 1, happy: 0, kpop: 0, thacher: 3, fromage: 0 } }
+    ]
+  },
+
+  {
+    text: "Ton hygiène personnelle est :",
+    answers: [
+      { text: "Inexistante mais assumée comme un “style de vie”", scores: { dark_micka: 3, ego_micka: 2, happy: 0, kpop: 0, thacher: 0, fromage: 1 } },
+      { text: "Aléatoire selon ton humeur", scores: { dark_micka: 2, ego_micka: 1, happy: 0, kpop: 2, thacher: 0, fromage: 0 } },
+      { text: "Correcte quand tu fais un effort", scores: { dark_micka: 0, happy: 2, kpop: 3, thacher: 0, fromage: 0 } },
+      { text: "Impeccable et militaire", scores: { dark_micka: 0, ego_micka: 0, happy: 0, kpop: 0, thacher: 3, fromage: 0 } }
+    ]
+  },
+
+  {
+    text: "Ton humeur en général :",
+    answers: [
+      { text: "Instable et imprévisible", scores: { dark_micka: 3, ego_micka: 2, happy: 0, kpop: 0, thacher: 0, fromage: 0 } },
+      { text: "Très confiante même sans raison", scores: { dark_micka: 1, ego_micka: 3, happy: 0, kpop: 0, thacher: 0, fromage: 0 } },
+      { text: "Variable mais globalement positive", scores: { dark_micka: 0, happy: 3, kpop: 1, thacher: 0, fromage: 0 } },
+      { text: "Contrôlée et stable", scores: { dark_micka: 0, ego_micka: 0, happy: 0, kpop: 0, thacher: 3, fromage: 0 } }
+    ]
+  },
+
+  {
+    text: "Ton rapport au regard des autres :",
+    answers: [
+      { text: "Tu penses qu’ils ne comprennent pas ton génie", scores: { dark_micka: 3, ego_micka: 3, happy: 0, kpop: 0, thacher: 0, fromage: 0 } },
+      { text: "Tu fais comme si ça t’était égal", scores: { dark_micka: 2, ego_micka: 2, happy: 0, kpop: 0, thacher: 0, fromage: 0 } },
+      { text: "Ça t’affecte mais tu avances", scores: { dark_micka: 1, happy: 1, kpop: 3, thacher: 0, fromage: 0 } },
+      { text: "Tu gères ton image parfaitement", scores: { dark_micka: 0, ego_micka: 0, happy: 0, kpop: 0, thacher: 3, fromage: 0 } }
+    ]
+  },
+
+  {
+    text: "Quand ton live flop :",
+    answers: [
+      { text: "Tu dis que c’était expérimental", scores: { dark_micka: 3, ego_micka: 3, happy: 0, kpop: 0, thacher: 0, fromage: 0 } },
+      { text: "Tu disparais sans explication", scores: { dark_micka: 3, ego_micka: 1, happy: 0, kpop: 0, thacher: 0, fromage: 0 } },
+      { text: "Tu rigoles pour cacher le malaise", scores: { dark_micka: 0, happy: 3, kpop: 1, thacher: 0, fromage: 0 } },
+      { text: "Tu analyses et corriges", scores: { dark_micka: 0, ego_micka: 0, happy: 0, kpop: 0, thacher: 3, fromage: 0 } }
+    ]
+  },
+
+  {
+    text: "Ton cerveau ressemble à :",
+    answers: [
+      { text: "Un tunnel sombre plein d’échos", scores: { dark_micka: 3, ego_micka: 2, happy: 0, kpop: 0, thacher: 0, fromage: 1 } },
+      { text: "Un film constant dans ta tête", scores: { dark_micka: 3, ego_micka: 3, happy: 0, kpop: 0, thacher: 0, fromage: 0 } },
+      { text: "Une playlist émotionnelle instable", scores: { dark_micka: 1, happy: 1, kpop: 3, thacher: 0, fromage: 0 } },
+      { text: "Un système structuré", scores: { dark_micka: 0, ego_micka: 0, happy: 0, kpop: 0, thacher: 3, fromage: 0 } }
+    ]
+  },
+
+  {
+    text: "Ton rapport au sommeil :",
+    answers: [
+      { text: "Tu dors quand ton cerveau s’éteint enfin", scores: { dark_micka: 3, ego_micka: 2, happy: 0, kpop: 0, thacher: 0, fromage: 0 } },
+      { text: "Tu refuses de t’arrêter de penser", scores: { dark_micka: 2, ego_micka: 3, happy: 0, kpop: 0, thacher: 0, fromage: 0 } },
+      { text: "Tu dors mal mais tu fais avec", scores: { dark_micka: 0, happy: 1, kpop: 3, thacher: 0, fromage: 0 } },
+      { text: "Tu as une routine stricte", scores: { dark_micka: 0, ego_micka: 0, happy: 0, kpop: 0, thacher: 3, fromage: 0 } }
+    ]
+  },
+
+  {
+    text: "Ton rapport aux erreurs :",
+    answers: [
+      { text: "Tu les ignores totalement", scores: { dark_micka: 3, ego_micka: 3, happy: 0, kpop: 0, thacher: 0, fromage: 0 } },
+      { text: "Tu les transformes en excuses artistiques", scores: { dark_micka: 2, ego_micka: 3, happy: 0, kpop: 0, thacher: 0, fromage: 0 } },
+      { text: "Tu apprends parfois d’elles", scores: { dark_micka: 0, happy: 2, kpop: 2, thacher: 0, fromage: 0 } },
+      { text: "Tu les corriges immédiatement", scores: { dark_micka: 0, ego_micka: 0, happy: 0, kpop: 0, thacher: 3, fromage: 0 } }
+    ]
+  },
+
+  {
+    text: "Ton rapport à la réalité :",
+    answers: [
+      { text: "Optionnelle selon ton humeur", scores: { dark_micka: 3, ego_micka: 3, happy: 0, kpop: 0, thacher: 0, fromage: 0 } },
+      { text: "Floue mais intéressante", scores: { dark_micka: 2, ego_micka: 2, happy: 0, kpop: 0, thacher: 0, fromage: 0 } },
+      { text: "Parfois agréable", scores: { dark_micka: 0, happy: 3, kpop: 1, thacher: 0, fromage: 0 } },
+      { text: "Structurée et logique", scores: { dark_micka: 0, ego_micka: 0, happy: 0, kpop: 0, thacher: 3, fromage: 0 } }
+    ]
+  },
+
+  {
+    text: "Ton plus gros échec artistique :",
+    answers: [
+      { text: "Tu continues de dire que c’est un chef-d’œuvre", scores: { dark_micka: 3, ego_micka: 3, happy: 0, kpop: 0, thacher: 0, fromage: 0 } },
+      { text: "Tu refuses d’en parler", scores: { dark_micka: 3, ego_micka: 2, happy: 0, kpop: 0, thacher: 0, fromage: 0 } },
+      { text: "Tu en rigoles maintenant", scores: { dark_micka: 0, happy: 3, kpop: 1, thacher: 0, fromage: 0 } },
+      { text: "Tu l’as analysé froidement", scores: { dark_micka: 0, ego_micka: 0, happy: 0, kpop: 0, thacher: 3, fromage: 0 } }
+    ]
+  },
+
+  {
+    text: "Ton rapport à la solitude :",
+    answers: [
+      { text: "Tu vis dedans comme si c’était normal", scores: { dark_micka: 3, ego_micka: 2, happy: 0, kpop: 0, thacher: 0, fromage: 0 } },
+      { text: "Tu la nies mais elle est là", scores: { dark_micka: 2, ego_micka: 3, happy: 0, kpop: 0, thacher: 0, fromage: 0 } },
+      { text: "Tu la supportes mais tu veux du lien", scores: { dark_micka: 0, happy: 1, kpop: 3, thacher: 0, fromage: 0 } },
+      { text: "Tu la contrôles totalement", scores: { dark_micka: 0, ego_micka: 0, happy: 0, kpop: 0, thacher: 3, fromage: 0 } }
+    ]
+  },
+
+  {
+    text: "Ton rapport au futur :",
+    answers: [
+      { text: "Tu penses qu’il t’appartient déjà", scores: { dark_micka: 3, ego_micka: 3, happy: 0, kpop: 0, thacher: 0, fromage: 0 } },
+      { text: "Tu improvises complètement", scores: { dark_micka: 2, ego_micka: 2, happy: 0, kpop: 0, thacher: 0, fromage: 0 } },
+      { text: "Tu espères que ça ira", scores: { dark_micka: 0, happy: 3, kpop: 1, thacher: 0, fromage: 0 } },
+      { text: "Tu planifies tout à l’avance", scores: { dark_micka: 0, ego_micka: 0, happy: 0, kpop: 0, thacher: 3, fromage: 0 } }
+    ]
+  },
+
+  {
+    text: "Ton rapport à toi-même :",
+    answers: [
+      { text: "Tu te vois comme un personnage de film", scores: { dark_micka: 3, ego_micka: 3, happy: 0, kpop: 0, thacher: 0, fromage: 0 } },
+      { text: "Tu ne sais pas trop qui tu es mais tu assumes", scores: { dark_micka: 2, ego_micka: 2, happy: 0, kpop: 1, thacher: 0, fromage: 0 } },
+      { text: "Tu t’aimes bien globalement", scores: { dark_micka: 0, happy: 3, kpop: 1, thacher: 0, fromage: 0 } },
+      { text: "Tu es très discipliné avec toi-même", scores: { dark_micka: 0, ego_micka: 0, happy: 0, kpop: 0, thacher: 3, fromage: 0 } }
+    ]
+  }
+];
+
+const RESULTS = {
+    dark_micka: {
+        title: "Dark Micka",
+        subtitle: "Archétype : Le Réalisateur du Chaos Intérieur",
+        description: "Tu es dans le contrôle… ou du moins tu fais semblant. Dans ta tête, tout est un film sombre, une mise en scène permanente où personne ne comprend ton génie. Tu disparais, tu réapparais, tu changes d’humeur comme on change de plan caméra. Le monde est un décor, et toi tu es persuadé d’en être le seul vrai auteur. Parfois lucide, souvent ailleurs, toujours dans l’excès mental.",
+        image: "/img/micka/dark.jpg",
+        emoji: "🌑"
+    },
+
+    ego_micka: {
+        title: "Ego micka",
+        subtitle: "Archétype : Le Génie Incompris Autoproclamé",
+        description: "Tu es convaincu que ton art dépasse les limites de la compréhension humaine… même quand personne ne voit rien de spécial. Tu transformes chaque échec en manifeste artistique, chaque critique en preuve de ton génie. Ton monde est une scène permanente où tu joues le rôle principal, même quand la salle est vide. Le problème ? Tu continues de croire que c’est un chef-d’œuvre.",
+        image: "/img/micka/ego.jpg",
+        emoji: "🎬"
+    },
+
+    happy: {
+        title: "micka Heureux",
+        subtitle: "Archétype : Le Chaos Lumineux",
+        description: "Contre toute attente, tu peux être simple. Tu es ce micka qui sourit sans trop savoir pourquoi, qui avance sans plan précis, mais qui tombe parfois juste. Tu n’as pas besoin de contrôler le monde, tu le traverses comme il vient. Ton énergie est imprévisible mais sincère, presque fragile dans sa naïveté. Quand ça va bien, tout paraît possible.",
+        image: "/img/micka/happy.jpg",
+        emoji: "☀️"
+    },
+
+    kpop: {
+        title: "micka K-pop",
+        subtitle: "Archétype : L’Émotion Amplifiée",
+        description: "Tu vis tout trop fort. Chaque regard, chaque silence, chaque échec devient une montagne émotionnelle. Tu rêves d’un monde plus doux, plus esthétique, plus compréhensible. Tu oscillles entre espoir et doute, mais tu continues d’avancer avec une sensibilité presque brute. Tu n’es pas faible — tu es constamment en surcharge émotionnelle.",
+        image: "/img/micka/kpop.jpg",
+        emoji: "🌸"
+    },
+
+    thacher: {
+        title: "micka Thatcher",
+        subtitle: "Archétype : Le Contrôle Absolu",
+        description: "Pour toi, le monde est un système à corriger. Tout doit avoir une logique, une structure, une règle. Tu ne laisses rien au hasard, pas même les émotions. Tu observes, tu analyses, tu ajustes. Certains te trouvent froid, mais tu appelles ça de la clarté. Dans le chaos des autres, tu construis des murs invisibles de discipline.",
+        image: "/img/micka/thacher.jpg",
+        emoji: "📋"
+    },
+
+    fromage: {
+        title: "Le Fromager des Égouts",
+        subtitle: "Archétype : L’Appétit Immonde",
+        description: "Tu es guidé par des instincts simples, bruts, impossibles à expliquer. Tout finit par revenir à quelque chose de basique, presque animal — et dans ton cas, c’est le fromage. Tu es imprévisible, un peu absurde, parfois dérangeant, mais étrangement constant dans ton chaos. Les autres ne te comprennent pas vraiment, mais toi tu assumes parfaitement ton existence dans les profondeurs.",
+        image: "/img/jeu-paires/fromager.jpg",
+        emoji: "🧀"
+    }
+};
+
+let currentQuestion = 0;
+let scores = { fromage: 0, slime: 0, police: 0, rat: 0 };
+
+const portal       = document.getElementById('quiz-portal');
+const quizContainer = document.getElementById('quiz-container');
+const resultContainer = document.getElementById('result-container');
+const questionText = document.getElementById('question-text');
+const answersContainer = document.getElementById('answers-container');
+const progressBar  = document.getElementById('progress-bar');
+const progressPct  = document.getElementById('progress-pct');
+const questionCounter = document.getElementById('question-counter');
+
+document.getElementById('start-btn').addEventListener('click', startQuiz);
+document.getElementById('retry-btn').addEventListener('click', resetQuiz);
+
+function startQuiz() {
+    portal.classList.add('hidden');
+    quizContainer.classList.remove('hidden');
+    showQuestion(0);
+}
+
+function showQuestion(index) {
+    const q = QUESTIONS[index];
+    const pct = Math.round((index / QUESTIONS.length) * 100);
+
+    questionCounter.textContent = `Question ${index + 1} / ${QUESTIONS.length}`;
+    progressPct.textContent = `${pct}%`;
+    progressBar.style.width = `${pct}%`;
+
+    // Animate card out then in
+    const card = document.getElementById('question-card');
+    card.style.opacity = '0';
+    card.style.transform = 'translateY(20px)';
+
+    setTimeout(() => {
+        questionText.textContent = q.text;
+        answersContainer.innerHTML = '';
+
+        q.answers.forEach((answer, i) => {
+            const btn = document.createElement('button');
+            btn.className = [
+                'w-full text-left px-6 py-5 rounded-2xl border-2 border-mauve-dark',
+                'bg-black/30 text-white font-bold uppercase text-xs tracking-widest',
+                'hover:border-accent hover:bg-accent/10 hover:text-accent',
+                'active:scale-95 transition-all duration-200',
+                'flex items-center gap-4'
+            ].join(' ');
+
+            const letter = String.fromCharCode(65 + i); // A, B, C, D
+            btn.innerHTML = `
+                <span class="flex-shrink-0 w-8 h-8 rounded-full border-2 border-current flex items-center justify-center font-mystere text-lg">${letter}</span>
+                <span>${answer.text}</span>
+            `;
+
+            btn.addEventListener('click', () => selectAnswer(answer.scores));
+            answersContainer.appendChild(btn);
+        });
+
+        card.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+        card.style.opacity = '1';
+        card.style.transform = 'translateY(0)';
+    }, 200);
+}
+
+function selectAnswer(answerScores) {
+    // Disable all buttons
+    const btns = answersContainer.querySelectorAll('button');
+    btns.forEach(b => b.disabled = true);
+
+    // Add scores
+    for (const [key, val] of Object.entries(answerScores)) {
+        scores[key] += val;
+    }
+
+    currentQuestion++;
+
+    if (currentQuestion < QUESTIONS.length) {
+        setTimeout(() => showQuestion(currentQuestion), 300);
+    } else {
+        setTimeout(showResult, 400);
+    }
+}
+
+function showResult() {
+    // Update progress to 100%
+    progressBar.style.width = '100%';
+    progressPct.textContent = '100%';
+
+    // Find winning archetype
+    const winner = Object.entries(scores).reduce((a, b) => a[1] > b[1] ? a : b)[0];
+    const result = RESULTS[winner];
+
+    document.getElementById('result-title').textContent = result.emoji + ' ' + result.title;
+    document.getElementById('result-subtitle').textContent = result.subtitle;
+    document.getElementById('result-description').textContent = result.description;
+    document.getElementById('result-image').src = result.image;
+    document.getElementById('result-image').alt = result.title;
+
+    // Transition
+    const card = document.getElementById('question-card');
+    card.style.opacity = '0';
+    card.style.transform = 'translateY(-20px)';
+
+    setTimeout(() => {
+        quizContainer.classList.add('hidden');
+        resultContainer.classList.remove('hidden');
+        resultContainer.style.opacity = '0';
+        resultContainer.style.transform = 'translateY(30px)';
+        resultContainer.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+        setTimeout(() => {
+            resultContainer.style.opacity = '1';
+            resultContainer.style.transform = 'translateY(0)';
+        }, 50);
+    }, 300);
+}
+
+function resetQuiz() {
+    currentQuestion = 0;
+    scores = { fromage: 0, slime: 0, police: 0, rat: 0 };
+
+    resultContainer.classList.add('hidden');
+    quizContainer.classList.remove('hidden');
+
+    progressBar.style.width = '0%';
+    progressPct.textContent = '0%';
+
+    showQuestion(0);
+}
+</script>
+{% endblock %}

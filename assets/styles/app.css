@@ -1,5 +1,3 @@
-/* Fond global du site — sombre, dans le ton "Immonde".
-   (Le dégradé mauve discret + le détail sont gérés dans base.html.twig.) */
 body {
-    background-color: #0f0d16;
+    background-color: skyblue;
 }

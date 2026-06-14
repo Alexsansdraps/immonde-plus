@@ -1,18 +1,21 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Les Articles - Imm🧅nde Plus{% endblock %}
+{% block title %}Les Articles - Imm🧅nde Plus | Dossiers Classés{% endblock %}
 
 {% block body %}
     <div class="border-b-2 border-accent pb-8 mb-12">
-        <h1 class="font-mystere text-5xl tracking-widest text-accent italic uppercase">Les Articles</h1>
-        <p class="text-mauve-light mt-2 font-bold uppercase text-[10px] tracking-[0.3em]">Tous les articles sur Mickael Emond.</p>
+        <h1 class="font-mystere text-5xl tracking-widest text-accent italic uppercase">Les Articles Classés</h1>
+        <p class="text-mauve-light mt-2 font-bold uppercase text-[10px] tracking-[0.3em]">Accès direct à la base de données Imm🧅nde Plus.</p>
     </div>
 
     <div class="mb-20 text-center relative group">
         <div class="absolute -inset-2 bg-accent/5 blur-xl rounded-full opacity-0 group-focus-within:opacity-100 transition-opacity"></div>
         <div class="relative">
-            <input type="text" id="article-search" name="q" value="{{ searchTerm }}" placeholder="RECHERCHER UN ARTICLE..."
+            <input type="text" id="article-search" name="q" value="{{ searchTerm }}" placeholder="SCANNER LA BASE DE DONNÉES..." 
                 class="w-full max-w-2xl bg-white/5 border-2 border-white/10 focus:border-accent focus:bg-accent/5 focus:ring-4 focus:ring-accent/10 rounded-full px-10 py-6 text-white font-black placeholder:text-white/20 transition-all text-xl text-center uppercase tracking-widest shadow-2xl">
+            <div class="absolute right-12 top-1/2 -translate-y-1/2 text-accent/30 animate-pulse hidden md:block">
+                <span class="text-[10px] font-black tracking-tighter">V1.0-INVESTIGATION</span>
+            </div>
         </div>
     </div>
 
@@ -21,7 +24,7 @@
             <article class="group relative flex flex-col bg-white/5 backdrop-blur-md rounded-[2.5rem] border border-white/10 hover:border-accent/50 overflow-hidden transition-all duration-500 shadow-2xl hover:-translate-y-4">
                 {# Badge Catégorie #}
                 <div class="absolute top-6 left-6 z-30 bg-accent text-primary text-[9px] font-black px-4 py-1.5 rounded-full uppercase tracking-widest shadow-[0_0_15px_rgba(57,255,20,0.4)]">
-                    {{ article.category ? article.category.name : 'Article' }}
+                    {{ article.category ? article.category.name : 'Classifié' }}
                 </div>
 
                 {# Image Container #}
@@ -46,7 +49,7 @@
                     <div class="absolute top-0 right-8 -translate-y-1/2 w-12 h-12 bg-accent/10 rounded-full blur-xl group-hover:bg-accent/30 transition-colors"></div>
                     
                     <time class="text-[10px] font-bold text-mauve-light uppercase tracking-[0.2em] mb-4 opacity-60">
-                        PUBLIÉ LE {{ article.publishedAt|date('d/m/Y') }}
+                        DOSSIER DU {{ article.publishedAt|date('d/m/Y') }}
                     </time>
                     
                     <h2 class="font-mystere text-3xl text-white mb-6 group-hover:text-accent transition-colors leading-tight italic uppercase tracking-tighter">
@@ -59,7 +62,7 @@
 
                     <div class="mt-auto pt-6 border-t border-white/5 flex justify-between items-center">
                         <a href="{{ path('blog_show', {slug: article.slug}) }}" class="inline-flex items-center gap-3 text-accent font-black uppercase text-[10px] tracking-widest group/link">
-                            <span class="group-hover/link:mr-2 transition-all">LIRE L'ARTICLE</span>
+                            <span class="group-hover/link:mr-2 transition-all">S'INFILTRER</span>
                             <span class="text-lg translate-y-[1px]">→</span>
                         </a>
                         <span class="text-[8px] font-black text-white/20 tracking-widest uppercase">PAR {{ article.author.pseudo ?: article.author.email|split('@')[0]|capitalize }}</span>
@@ -68,7 +71,7 @@
             </article>
         {% else %}
             <div class="col-span-full text-center py-32 border-2 border-dashed border-white/5 rounded-[3rem]">
-                <p class="text-mauve-light font-black italic opacity-40 uppercase tracking-[0.4em]">Aucun article pour le moment.</p>
+                <p class="text-mauve-light font-black italic opacity-40 uppercase tracking-[0.4em]">Aucun dossier n'a été déclassifié.</p>
             </div>
         {% endfor %}
     </div>
@@ -84,7 +87,7 @@
             {% endif %}
             
             <div class="flex flex-col items-center">
-                <span class="text-accent/50 font-black text-[10px] tracking-[0.4em] uppercase mb-1">Page</span>
+                <span class="text-accent/50 font-black text-[10px] tracking-[0.4em] uppercase mb-1">Dossier</span>
                 <span class="text-white font-mystere text-4xl tracking-widest italic">{{ currentPage }} <span class="text-accent/30">/</span> {{ totalPages }}</span>
             </div>
 
