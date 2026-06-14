@@ -102,6 +102,18 @@ class BlogController extends AbstractController
         return $this->render('blog/bubble_shooter.html.twig');
     }
 
+    #[Route('/jeux/quel-immonde-es-tu', name: 'blog_game_test_personnalite')]
+    public function gameTestPersonnalite(): Response
+    {
+        return $this->render('blog/test_personnalite.html.twig');
+    }
+
+    #[Route('/jeux/les-differences', name: 'blog_game_differences')]
+    public function gameDifferences(): Response
+    {
+        return $this->render('blog/sept_differences.html.twig');
+    }
+
     #[Route('/films/serie/{slug}', name: 'blog_series_show')]
     public function seriesShow(
         #[MapEntity(mapping: ['slug' => 'slug'])]

@@ -135,18 +135,55 @@
                 </div>
             </article>
 
-            {# Slots vides #}
-            <div class="flex flex-col items-center justify-center bg-black/20 rounded-3xl border-2 border-dashed border-mauve-dark/40 p-12 text-center opacity-40">
-                <span class="text-4xl mb-4">🔒</span>
-                <h3 class="font-mystere text-xl uppercase tracking-widest">Archive Corrompue</h3>
-                <p class="text-[8px] uppercase font-black tracking-tighter mt-2">Accès refusé par l'administrateur</p>
-            </div>
+            {# Quel Immonde Es-Tu ? #}
+            <article onclick="window.location.href='{{ path('blog_game_test_personnalite') }}'" class="group relative flex flex-col bg-primary/40 rounded-3xl border-2 border-mauve-dark hover:border-accent overflow-hidden transition-all duration-500 shadow-2xl hover:scale-105 cursor-pointer">
+                <div class="aspect-video overflow-hidden relative">
+                    <img src="/img/jeu-paires/FB_IMG_1547495556903.jpg" alt="Quel Immonde Es-Tu ?" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700">
+                    <div class="absolute inset-0 bg-black/60 group-hover:bg-black/20 transition-all"></div>
+                </div>
 
-            <div class="flex flex-col items-center justify-center bg-black/20 rounded-3xl border-2 border-dashed border-mauve-dark/40 p-12 text-center opacity-40">
-                <span class="text-4xl mb-4">🔒</span>
-                <h3 class="font-mystere text-xl uppercase tracking-widest">Archive Corrompue</h3>
-                <p class="text-[8px] uppercase font-black tracking-tighter mt-2">Accès refusé par l'administrateur</p>
-            </div>
+                <div class="p-8 relative">
+                    <h2 class="font-mystere text-4xl mb-4 group-hover:text-accent transition-colors tracking-widest uppercase italic">
+                        Quel Immonde Es-Tu ?
+                    </h2>
+                    <p class="text-xs text-mauve-light font-bold uppercase tracking-widest leading-relaxed mb-8 opacity-70">
+                        LE TEST DES ÉGOUTS : Réponds à 20 questions et découvre quel archétype de l'Immonde sommeille en toi.
+                    </p>
+
+                    <button class="w-full bg-accent text-primary py-4 rounded-full font-mystere text-2xl tracking-widest uppercase shadow-[0_0_20px_rgba(57,255,20,0.4)] pointer-events-none">
+                        SE RÉVÉLER
+                    </button>
+                </div>
+
+                <div class="absolute top-4 right-4 bg-accent text-primary text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest animate-pulse">
+                    QUIZ
+                </div>
+            </article>
+
+            {# Les Différences de Diogène #}
+            <article onclick="window.location.href='{{ path('blog_game_differences') }}'" class="group relative flex flex-col bg-primary/40 rounded-3xl border-2 border-mauve-dark hover:border-accent overflow-hidden transition-all duration-500 shadow-2xl hover:scale-105 cursor-pointer">
+                <div class="aspect-video overflow-hidden relative">
+                    <img src="/img/differences/original_01.jpg" alt="Les Différences de Diogène" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700">
+                    <div class="absolute inset-0 bg-black/60 group-hover:bg-black/20 transition-all"></div>
+                </div>
+
+                <div class="p-8 relative">
+                    <h2 class="font-mystere text-4xl mb-4 group-hover:text-accent transition-colors tracking-widest uppercase italic">
+                        Les Différences de Diogène
+                    </h2>
+                    <p class="text-xs text-mauve-light font-bold uppercase tracking-widest leading-relaxed mb-8 opacity-70">
+                        L'ŒIL DE L'IMMONDE : Trouve toutes les anomalies cachées entre les deux images des égouts.
+                    </p>
+
+                    <button class="w-full bg-accent text-primary py-4 rounded-full font-mystere text-2xl tracking-widest uppercase shadow-[0_0_20px_rgba(57,255,20,0.4)] pointer-events-none">
+                        INSPECTER
+                    </button>
+                </div>
+
+                <div class="absolute top-4 right-4 bg-accent text-primary text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest animate-pulse">
+                    OBSERVATION
+                </div>
+            </article>
         </div>
 
         <div class="mt-20 text-center">
